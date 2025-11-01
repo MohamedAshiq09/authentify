@@ -1,16 +1,19 @@
 [package]
-name = "authentify"
-version = "0.1.0"
+name = "authentify-contract"
+version = "1.0.0"
 authors = ["Your Name <you@example.com>"]
 edition = "2021"
+license = "MIT"
+description = "Authentify - Web3 Authentication Layer for Polkadot"
+repository = "https://github.com/yourusername/authentify"
 
 [dependencies]
 ink = { version = "5.0.0", default-features = false }
 scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] }
-scale-info = { version = "2.6", default-features = false, features = ["derive"], optional = true }
+scale-info = { version = "2.11", default-features = false, features = ["derive"], optional = true }
 
 [dev-dependencies]
-ink_e2e = "5.0.0"
+ink_e2e = { version = "5.0.0" }
 
 [lib]
 path = "lib.rs"
@@ -24,3 +27,9 @@ std = [
 ]
 ink-as-dependency = []
 e2e-tests = []
+
+[profile.release]
+opt-level = "z"     # Optimize for size
+lto = true          # Enable Link Time Optimization
+codegen-units = 1   # Better optimization
+overflow-checks = false
