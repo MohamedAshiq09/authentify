@@ -127,7 +127,7 @@ export class SessionService {
   /**
    * Get user's active sessions
    */
-  static async getUserSessions(userId: string): Promise<Session[]> {
+  static async getUserSessions(userId: string): Promise<Partial<Session>[]> {
     const { data: sessions, error } = await supabaseAdmin
       .from('sessions')
       .select('id, created_at, expires_at')

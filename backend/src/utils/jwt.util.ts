@@ -7,18 +7,26 @@ export class JWTUtil {
    * Generate access token (short-lived)
    */
   static generateAccessToken(payload: TokenPayload): string {
+    if (!config.JWT_SECRET) {
+      throw new Error('JWT_SECRET is not configured');
+    }
+    
     return jwt.sign(payload, config.JWT_SECRET, {
       expiresIn: config.JWT_EXPIRY,
-    });
+    } as jwt.SignOptions);
   }
 
   /**
    * Generate refresh token (long-lived)
    */
   static generateRefreshToken(payload: TokenPayload): string {
+    if (!config.JWT_REFRESH_SECRET) {
+      throw new Error('JWT_REFRESH_SECRET is not configured');
+    }
+    
     return jwt.sign(payload, config.JWT_REFRESH_SECRET, {
       expiresIn: config.JWT_REFRESH_EXPIRY,
-    });
+    } as jwt.SignOptions);
   }
 
   /**
