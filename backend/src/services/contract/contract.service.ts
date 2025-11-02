@@ -156,7 +156,8 @@ export class ContractService {
       let syncedCount = 0;
 
       for (const event of events) {
-        if (event.args) {
+        // Type guard to check if event is EventLog
+        if ('args' in event && event.args) {
           await this.storeContractEvent({
             event_name: 'UserRegistered',
             block_number: event.blockNumber,
