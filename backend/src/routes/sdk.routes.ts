@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { SDKController } from '../controllers/sdk.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { generalLimiter } from '../middleware/ratelimit.middleware';
-import { validateSDKClient } from '../middleware/validation.middleware';
+import { validateSDKClient, handleValidationErrors } from '../middleware/validation.middleware';
 import { body, param } from 'express-validator';
 
 const router = Router();
@@ -13,6 +13,7 @@ router.post('/verify',
   [
     body('client_id').notEmpty().withMessage('Client ID is required'),
     body('client_secret').notEmpty().withMessage('Client secret is required'),
+    handleValidationErrors,
   ],
   SDKController.verifyClient
 );
@@ -45,6 +46,7 @@ router.put('/client/:client_id',
       .optional()
       .isURL()
       .withMessage('All redirect URIs must be valid URLs'),
+    handleValidationErrors,
   ],
   SDKController.updateClient
 );
@@ -53,6 +55,7 @@ router.delete('/client/:client_id',
   authenticateToken,
   [
     param('client_id').notEmpty().withMessage('Client ID is required'),
+    handleValidationErrors,
   ],
   SDKController.deleteClient
 );
@@ -61,6 +64,7 @@ router.post('/client/:client_id/regenerate-secret',
   authenticateToken,
   [
     param('client_id').notEmpty().withMessage('Client ID is required'),
+    handleValidationErrors,
   ],
   SDKController.regenerateSecret
 );
@@ -70,6 +74,7 @@ router.get('/client/:client_id/analytics',
   authenticateToken,
   [
     param('client_id').notEmpty().withMessage('Client ID is required'),
+    handleValidationErrors,
   ],
   SDKController.getClientAnalytics
 );
