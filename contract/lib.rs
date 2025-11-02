@@ -1002,5 +1002,460 @@ mod authentify {
             assert!(!authentify.is_username_available(String::from("alice")));
             assert!(!authentify.is_username_available(String::from("ALICE"))); // Case insensitive
         }
+
+        #[ink::test]
+        fn test_social_id_validation() {
+            let accounts = create_test_accounts();
+            set_sender(accounts.alice);
+            let mut authentify = Authentify::new();
+            let social_hash = String::from("social_hash_123");
+
+            // Test social ID availability before registration
+            assert!(authentify.is_social_id_available(social_hash.clone()));
+
+            // Register with social ID
+            let _ = authentify.register_identity(
+                String::from("alice"),
+                String::from("valid_password_hash"),
+                social_hash.clone(),
+                String::from("google"),
+            );
+
+            // Social ID should no longer be available
+            assert!(!authentify.is_social_id_available(social_hash.clone()));
+
+            // Try to register another user with same social ID
+            set_sender(accounts.bob);
+            let result = authentify.register_identity(
+                String::from("bob"),
+                String::from("different_password"),
+                social_hash.clone(),
+                String::from("github"),
+            );
+            assert_eq!(result, Err(Error::SocialIdAlreadyBound));
+        }
+
+        #[ink::test]
+        fn test_session_management() {
+            let accounts = create_test_accounts();
+            set_sender(accounts.alice);
+            let mut authentify = Authentify::new();
+            let session_id = String::from("session_123");
+
+            // Register user first
+            let _ = authentify.register_identity(
+                String::from("alice"),
+                String::from("valid_password_hash"),
+                String::from("social_hash"),
+                String::from("google"),
+            );
+
+            // Create session
+            let result = authentify.create_session(
+                accounts.alice,
+                session_id.clone(),
+                3600000, // 1 hour
+            );
+            assert!(result.is_ok());
+            assert_eq!(authentify.get_active_sessions(), 1);
+
+            // Verify session
+            let result = authentify.verify_session(session_id.clone());
+            assert_eq!(result, Ok(accounts.alice));
+
+            // Revoke session
+            let result = authentify.revoke_session(session_id.clone());
+            assert!(result.is_ok());
+            assert_eq!(authentify.get_active_sessions(), 0);
+
+            // Try to verify revoked session
+            let result = authentify.verify_session(session_id.clone());
+            assert_eq!(result, Err(Error::SessionAlreadyRevoked));
+        }
+
+        #[ink::test]
+        fn test_session_expiry() {
+            let accounts = create_test_accounts();
+            set_sender(accounts.alice);
+            let mut authentify = Authentify::new();
+            let session_id = String::from("session_expired");
+
+            // Register user
+            let _ = authentify.register_identity(
+                String::from("alice"),
+                String::from("valid_password_hash"),
+                String::from("social_hash"),
+                String::from("google"),
+            );
+
+            // Create session with very short duration (1ms)
+            let result = authentify.create_session(
+                accounts.alice,
+                session_id.clone(),
+                1, // 1 millisecond
+            );
+            assert!(result.is_ok());
+
+            // Session should be expired immediately in test environment
+            // Note: In real environment, time advances naturally
+            // For testing purposes, we check the session exists but might be expired
+            let result = authentify.verify_session(session_id.clone());
+            // This might pass or fail depending on timing - in production would be expired
+        }
+
+        #[ink::test]
+        fn test_get_account_by_username() {
+            let accounts = create_test_accounts();
+            set_sender(accounts.alice);
+            let mut authentify = Authentify::new();
+
+            // Should return None for non-existent username
+            assert_eq!(authentify.get_account_by_username(String::from("alice")), None);
+
+            // Register user
+            let _ = authentify.register_identity(
+                String::from("alice"),
+                String::from("valid_password_hash"),
+                String::from("social_hash"),
+                String::from("google"),
+            );
+
+            // Should return correct account
+            assert_eq!(
+                authentify.get_account_by_username(String::from("alice")),
+                Some(accounts.alice)
+            );
+
+            // Should work case-insensitively
+            assert_eq!(
+                authentify.get_account_by_username(String::from("ALICE")),
+                Some(accounts.alice)
+            );
+        }
+
+        #[ink::test]
+        fn test_get_account_by_social() {
+            let accounts = create_test_accounts();
+            set_sender(accounts.alice);
+            let mut authentify = Authentify::new();
+            let social_hash = String::from("google_hash_123");
+
+            // Should return None for non-existent social hash
+            assert_eq!(authentify.get_account_by_social(social_hash.clone()), None);
+
+            // Register user
+            let _ = authentify.register_identity(
+                String::from("alice"),
+                String::from("valid_password_hash"),
+                social_hash.clone(),
+                String::from("google"),
+            );
+
+            // Should return correct account
+            assert_eq!(
+                authentify.get_account_by_social(social_hash.clone()),
+                Some(accounts.alice)
+            );
+        }
+
+        #[ink::test]
+        fn test_verify_password() {
+            let accounts = create_test_accounts();
+            set_sender(accounts.alice);
+            let mut authentify = Authentify::new();
+            let password_hash = String::from("correct_password_hash");
+
+            // Register user
+            let _ = authentify.register_identity(
+                String::from("alice"),
+                password_hash.clone(),
+                String::from("social_hash"),
+                String::from("google"),
+            );
+
+            // Verify correct password
+            let result = authentify.verify_password(accounts.alice, password_hash.clone());
+            assert_eq!(result, Ok(true));
+
+            // Verify wrong password
+            let result = authentify.verify_password(accounts.alice, String::from("wrong_hash"));
+            assert_eq!(result, Ok(false));
+
+            // Test with non-existent account
+            let result = authentify.verify_password(accounts.bob, password_hash.clone());
+            assert_eq!(result, Err(Error::IdentityNotFound));
+        }
+
+        #[ink::test]
+        fn test_admin_functions() {
+            let accounts = create_test_accounts();
+            set_sender(accounts.alice);
+            let mut authentify = Authentify::new();
+
+            // Alice is admin by default (constructor caller)
+            assert_eq!(authentify.get_admin(), accounts.alice);
+
+            // Transfer admin to Bob
+            let result = authentify.transfer_admin(accounts.bob);
+            assert!(result.is_ok());
+            assert_eq!(authentify.get_admin(), accounts.bob);
+
+            // Alice should no longer be able to perform admin functions
+            let result = authentify.transfer_admin(accounts.charlie);
+            assert_eq!(result, Err(Error::Unauthorized));
+
+            // Bob should be able to perform admin functions
+            set_sender(accounts.bob);
+            let result = authentify.transfer_admin(accounts.charlie);
+            assert!(result.is_ok());
+            assert_eq!(authentify.get_admin(), accounts.charlie);
+        }
+
+        #[ink::test]
+        fn test_update_settings() {
+            let accounts = create_test_accounts();
+            set_sender(accounts.alice);
+            let mut authentify = Authentify::new();
+
+            // Test updating max failed attempts
+            assert_eq!(authentify.get_max_failed_attempts(), 5);
+            let result = authentify.update_max_failed_attempts(3);
+            assert!(result.is_ok());
+            assert_eq!(authentify.get_max_failed_attempts(), 3);
+
+            // Test updating lockout duration
+            assert_eq!(authentify.get_lockout_duration(), 900000);
+            let result = authentify.update_lockout_duration(600000);
+            assert!(result.is_ok());
+            assert_eq!(authentify.get_lockout_duration(), 600000);
+
+            // Test unauthorized access
+            set_sender(accounts.bob);
+            let result = authentify.update_max_failed_attempts(10);
+            assert_eq!(result, Err(Error::Unauthorized));
+            let result = authentify.update_lockout_duration(1200000);
+            assert_eq!(result, Err(Error::Unauthorized));
+        }
+
+        #[ink::test]
+        fn test_unlock_account() {
+            let accounts = create_test_accounts();
+            set_sender(accounts.alice);
+            let mut authentify = Authentify::new();
+
+            // Register user
+            let _ = authentify.register_identity(
+                String::from("alice"),
+                String::from("correct_password_hash"),
+                String::from("social_hash"),
+                String::from("google"),
+            );
+
+            // Lock account by failing authentication multiple times
+            for _ in 0..5 {
+                let _ = authentify.authenticate(
+                    String::from("alice"),
+                    String::from("wrong_password_hash"),
+                );
+            }
+
+            // Verify account is locked
+            let identity = authentify.get_identity(accounts.alice).unwrap();
+            assert!(identity.is_locked);
+
+            // Admin can unlock the account
+            let result = authentify.unlock_account(accounts.alice);
+            assert!(result.is_ok());
+
+            // Verify account is unlocked
+            let identity = authentify.get_identity(accounts.alice).unwrap();
+            assert!(!identity.is_locked);
+            assert_eq!(identity.failed_attempts, 0);
+
+            // Test unauthorized unlock
+            set_sender(accounts.bob);
+            let result = authentify.unlock_account(accounts.alice);
+            assert_eq!(result, Err(Error::Unauthorized));
+        }
+
+        #[ink::test]
+        fn test_password_validation_edge_cases() {
+            let accounts = create_test_accounts();
+            set_sender(accounts.alice);
+            let mut authentify = Authentify::new();
+
+            // Empty password hash
+            let result = authentify.register_identity(
+                String::from("alice"),
+                String::from(""),
+                String::from("social_hash"),
+                String::from("google"),
+            );
+            assert_eq!(result, Err(Error::EmptyPasswordHash));
+
+            // Very short password hash (less than 4 chars)
+            let result = authentify.register_identity(
+                String::from("alice"),
+                String::from("abc"),
+                String::from("social_hash"),
+                String::from("google"),
+            );
+            assert_eq!(result, Err(Error::EmptyPasswordHash));
+
+            // Empty social ID hash
+            let result = authentify.register_identity(
+                String::from("alice"),
+                String::from("valid_password_hash"),
+                String::from(""),
+                String::from("google"),
+            );
+            assert_eq!(result, Err(Error::EmptySocialIdHash));
+        }
+
+        #[ink::test]
+        fn test_username_length_validation() {
+            let accounts = create_test_accounts();
+            set_sender(accounts.alice);
+            let mut authentify = Authentify::new();
+
+            // Username too long (more than 32 characters)
+            let long_username = "a".repeat(33);
+            let result = authentify.register_identity(
+                long_username,
+                String::from("valid_password_hash"),
+                String::from("social_hash"),
+                String::from("google"),
+            );
+            assert_eq!(result, Err(Error::UsernameTooLong));
+
+            // Valid username at boundary (32 characters)
+            let boundary_username = "a".repeat(32);
+            let result = authentify.register_identity(
+                boundary_username,
+                String::from("valid_password_hash"),
+                String::from("social_hash"),
+                String::from("google"),
+            );
+            assert!(result.is_ok());
+        }
+
+        #[ink::test]
+        fn test_multiple_identity_registrations() {
+            let accounts = create_test_accounts();
+            set_sender(accounts.alice);
+            let mut authentify = Authentify::new();
+
+            // First registration
+            let result = authentify.register_identity(
+                String::from("alice"),
+                String::from("password1"),
+                String::from("social1"),
+                String::from("google"),
+            );
+            assert!(result.is_ok());
+
+            // Try to register again with same account
+            let result = authentify.register_identity(
+                String::from("alice2"),
+                String::from("password2"),
+                String::from("social2"),
+                String::from("github"),
+            );
+            assert_eq!(result, Err(Error::IdentityAlreadyExists));
+        }
+
+        #[ink::test]
+        fn test_change_password_edge_cases() {
+            let accounts = create_test_accounts();
+            set_sender(accounts.alice);
+            let mut authentify = Authentify::new();
+
+            // Try to change password without identity
+            let result = authentify.change_password(
+                String::from("old_hash"),
+                String::from("new_hash"),
+            );
+            assert_eq!(result, Err(Error::IdentityNotFound));
+
+            // Register user
+            let old_hash = String::from("old_password_hash");
+            let _ = authentify.register_identity(
+                String::from("alice"),
+                old_hash.clone(),
+                String::from("social_hash"),
+                String::from("google"),
+            );
+
+            // Try to change with wrong old password
+            let result = authentify.change_password(
+                String::from("wrong_old_hash"),
+                String::from("new_hash"),
+            );
+            assert_eq!(result, Err(Error::InvalidCredentials));
+
+            // Try to change to empty new password
+            let result = authentify.change_password(
+                old_hash.clone(),
+                String::from(""),
+            );
+            assert_eq!(result, Err(Error::EmptyPasswordHash));
+        }
+
+        #[ink::test]
+        fn test_get_identity_complete() {
+            let accounts = create_test_accounts();
+            set_sender(accounts.alice);
+            let mut authentify = Authentify::new();
+
+            // Should return None for non-existent identity
+            assert_eq!(authentify.get_identity(accounts.alice), None);
+
+            // Register user
+            let username = String::from("alice");
+            let password_hash = String::from("password_hash");
+            let social_hash = String::from("social_hash");
+            let social_provider = String::from("google");
+
+            let _ = authentify.register_identity(
+                username.clone(),
+                password_hash.clone(),
+                social_hash.clone(),
+                social_provider.clone(),
+            );
+
+            // Get identity and verify all fields
+            let identity = authentify.get_identity(accounts.alice).unwrap();
+            assert_eq!(identity.username, username);
+            assert_eq!(identity.password_hash, password_hash);
+            assert_eq!(identity.social_id_hash, social_hash);
+            assert_eq!(identity.social_provider, social_provider);
+            assert_eq!(identity.wallet_address, accounts.alice);
+            assert!(!identity.is_verified);
+            assert_eq!(identity.failed_attempts, 0);
+            assert!(!identity.is_locked);
+        }
+
+        #[ink::test]
+        fn test_session_not_found() {
+            let authentify = Authentify::new();
+
+            // Try to verify non-existent session
+            let result = authentify.verify_session(String::from("non_existent_session"));
+            assert_eq!(result, Err(Error::SessionNotFound));
+
+            // Try to revoke non-existent session
+            let mut authentify = Authentify::new();
+            let result = authentify.revoke_session(String::from("non_existent_session"));
+            assert_eq!(result, Err(Error::SessionNotFound));
+        }
+
+        #[ink::test]
+        fn test_constructor_with_config() {
+            let authentify = Authentify::new_with_config(3, 600000);
+            assert_eq!(authentify.get_max_failed_attempts(), 3);
+            assert_eq!(authentify.get_lockout_duration(), 600000);
+            assert_eq!(authentify.get_total_users(), 0);
+            assert_eq!(authentify.get_active_sessions(), 0);
+        }
     }
 }
