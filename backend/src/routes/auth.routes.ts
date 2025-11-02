@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { AuthController } from '../controllers/auth.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { authLimiter, passwordResetLimiter } from '../middleware/ratelimit.middleware';
-import { validateRegister, validateLogin } from '../middleware/validation.middleware';
+import { validateRegister, validateLogin, handleValidationErrors } from '../middleware/validation.middleware';
 import { body } from 'express-validator';
 
 const router = Router();
@@ -17,6 +17,7 @@ router.post('/password/request-reset',
   passwordResetLimiter,
   [
     body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
+    handleValidationErrors,
   ],
   AuthController.requestPasswordReset
 );
@@ -30,6 +31,7 @@ router.post('/password/reset',
       .withMessage('Password must be at least 8 characters')
       .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
       .withMessage('Password must contain uppercase, lowercase, and number'),
+    handleValidationErrors,
   ],
   AuthController.resetPassword
 );
@@ -43,6 +45,7 @@ router.put('/wallet',
     body('wallet_address')
       .matches(/^0x[a-fA-F0-9]{40}$/)
       .withMessage('Invalid Ethereum address'),
+    handleValidationErrors,
   ],
   AuthController.updateWallet
 );
@@ -56,6 +59,7 @@ router.put('/password',
       .withMessage('Password must be at least 8 characters')
       .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
       .withMessage('Password must contain uppercase, lowercase, and number'),
+    handleValidationErrors,
   ],
   AuthController.changePassword
 );

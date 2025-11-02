@@ -32,10 +32,14 @@ const getEnvVariable = (key: string, defaultValue?: string): string => {
   return value;
 };
 
+const getOptionalEnvVariable = (key: string, defaultValue: string): string => {
+  return process.env[key] || defaultValue;
+};
+
 export const config: EnvConfig = {
-  NODE_ENV: getEnvVariable('NODE_ENV', 'development'),
-  PORT: parseInt(getEnvVariable('PORT', '5000')),
-  FRONTEND_URL: getEnvVariable('FRONTEND_URL', 'http://localhost:3000'),
+  NODE_ENV: getOptionalEnvVariable('NODE_ENV', 'development'),
+  PORT: parseInt(getOptionalEnvVariable('PORT', '5000')),
+  FRONTEND_URL: getOptionalEnvVariable('FRONTEND_URL', 'http://localhost:3000'),
   
   SUPABASE_URL: getEnvVariable('SUPABASE_URL'),
   SUPABASE_ANON_KEY: getEnvVariable('SUPABASE_ANON_KEY'),
@@ -43,13 +47,13 @@ export const config: EnvConfig = {
   
   JWT_SECRET: getEnvVariable('JWT_SECRET'),
   JWT_REFRESH_SECRET: getEnvVariable('JWT_REFRESH_SECRET'),
-  JWT_EXPIRY: getEnvVariable('JWT_EXPIRY', '15m'),
-  JWT_REFRESH_EXPIRY: getEnvVariable('JWT_REFRESH_EXPIRY', '7d'),
+  JWT_EXPIRY: getOptionalEnvVariable('JWT_EXPIRY', '15m'),
+  JWT_REFRESH_EXPIRY: getOptionalEnvVariable('JWT_REFRESH_EXPIRY', '7d'),
   
-  CONTRACT_ADDRESS: getEnvVariable('CONTRACT_ADDRESS'),
-  RPC_URL: getEnvVariable('RPC_URL'),
-  SERVICE_ACCOUNT_PRIVATE_KEY: getEnvVariable('SERVICE_ACCOUNT_PRIVATE_KEY'),
+  CONTRACT_ADDRESS: getOptionalEnvVariable('CONTRACT_ADDRESS', '0x0000000000000000000000000000000000000000'),
+  RPC_URL: getOptionalEnvVariable('RPC_URL', 'https://sepolia.infura.io/v3/YOUR_INFURA_KEY'),
+  SERVICE_ACCOUNT_PRIVATE_KEY: getOptionalEnvVariable('SERVICE_ACCOUNT_PRIVATE_KEY', '0x0000000000000000000000000000000000000000000000000000000000000000'),
   
-  RATE_LIMIT_WINDOW_MS: parseInt(getEnvVariable('RATE_LIMIT_WINDOW_MS', '900000')),
-  RATE_LIMIT_MAX_REQUESTS: parseInt(getEnvVariable('RATE_LIMIT_MAX_REQUESTS', '100')),
+  RATE_LIMIT_WINDOW_MS: parseInt(getOptionalEnvVariable('RATE_LIMIT_WINDOW_MS', '900000')),
+  RATE_LIMIT_MAX_REQUESTS: parseInt(getOptionalEnvVariable('RATE_LIMIT_MAX_REQUESTS', '100')),
 };
