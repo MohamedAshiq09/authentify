@@ -1,16 +1,37 @@
 {
-  "name": "backend",
+  "name": "authentify-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Authentify Backend - Decentralized Identity Authentication System",
+  "main": "dist/server.js",
   "scripts": {
+    "dev": "nodemon src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": ["authentication", "blockchain", "oauth", "jwt"],
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "helmet": "^7.1.0",
+    "@supabase/supabase-js": "^2.38.4",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "ethers": "^6.8.1",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.0.1",
+    "uuid": "^9.0.1"
+  },
   "devDependencies": {
     "@types/node": "^24.9.2",
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/uuid": "^9.0.7",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
