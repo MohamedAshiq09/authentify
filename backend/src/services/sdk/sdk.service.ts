@@ -93,7 +93,7 @@ export class SDKService {
   static async getUserClients(userId: string): Promise<SDKClient[]> {
     const { data: clients, error } = await supabaseAdmin
       .from('sdk_clients')
-      .select('id, client_id, app_name, app_url, redirect_uris, created_at')
+      .select('*')
       .eq('created_by', userId)
       .order('created_at', { ascending: false });
 
