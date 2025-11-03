@@ -1,60 +1,122 @@
-import { contract, provider } from '../../config/contract.config';
+import { getAPI, getContract, getServiceAccount, isContractAvailable } from '../../config/contract.config';
 import { supabaseAdmin } from '../../config/supabase.config';
 import { RegisterContractRequest, QueryUserRequest } from '../../types/contract.types';
-import { ValidatorUtil } from '../../utils/validator.util';
 
 export class ContractService {
   /**
-   * Register user on smart contract
+   * Register user on ink! smart contract
    */
   static async registerUser(data: RegisterContractRequest): Promise<{ transactionHash: string }> {
     const { user_address, auth_method } = data;
 
-    // Validate address
-    if (!ValidatorUtil.isValidAddress(user_address)) {
-      throw new Error('Invalid wallet address');
+    // Validate Substrate address format (basic check)
+    if (!user_address || user_address.length < 47) {
+      throw new Error('Invalid Substrate address format');
+    }
+
+    if (!isContractAvailable()) {
+      throw new Error('Contract not available. Ensure contract metadata is loaded.');
     }
 
     try {
-      // Call contract register function
-      const tx = await contract.register(user_address, auth_method);
-      
-      // Wait for transaction confirmation
-      const receipt = await tx.wait();
+      const contract = getContract();
+      const serviceAccount = getServiceAccount();
+      const api = getAPI();
 
-      // Store event in database for caching
-      await this.storeContractEvent({
-        event_name: 'UserRegistered',
-        block_number: receipt.blockNumber,
-        transaction_hash: receipt.hash,
+      console.log(`📝 Registering user: ${user_address} with method: ${auth_method}`);
+
+      // Use a reasonable gas limit for the transaction
+      const gasLimit = {
+        refTime: 3000000000,
+        proofSize: 1000000,
+      };
+
+      // Execute transaction directly (skip dry run for now)
+      const tx = contract.tx.registerIdentity(
+        {
+          gasLimit: gasLimit as any,
+          storageDepositLimit: null,
+        },
         user_address,
-        data: { auth_method },
+        'password_hash_placeholder',
+        `social_hash_${Date.now()}`,
+        auth_method
+      );
+
+      // Sign and send transaction
+      return new Promise((resolve, reject) => {
+        tx.signAndSend(serviceAccount, (result) => {
+          if (result.status.isInBlock) {
+            console.log(`✅ Transaction included in block: ${result.status.asInBlock}`);
+            
+            // Store event in database
+            this.storeContractEvent({
+              event_name: 'UserRegistered',
+              block_number: 0, // Will be updated when we get block info
+              transaction_hash: result.txHash.toString(),
+              user_address,
+              data: { auth_method },
+            });
+
+            resolve({ transactionHash: result.txHash.toString() });
+          } else if (result.status.isFinalized) {
+            console.log(`🎉 Transaction finalized: ${result.status.asFinalized}`);
+          } else if (result.isError) {
+            console.error('Transaction error:', result);
+            reject(new Error('Transaction failed'));
+          }
+        }).catch(reject);
       });
 
-      return { transactionHash: receipt.hash };
     } catch (error: any) {
+      console.error('Contract registration error:', error);
       throw new Error(`Contract registration failed: ${error.message}`);
     }
   }
 
   /**
-   * Check if user is registered and can login
+   * Check if user can login (query contract)
    */
   static async canUserLogin(data: QueryUserRequest): Promise<{ canLogin: boolean; authMethods: string[] }> {
     const { user_address } = data;
 
-    // Validate address
-    if (!ValidatorUtil.isValidAddress(user_address)) {
-      throw new Error('Invalid wallet address');
+    if (!isContractAvailable()) {
+      // If contract not available, return false but don't throw error
+      console.warn('Contract not available for login check');
+      return { canLogin: false, authMethods: [] };
     }
 
     try {
-      // Query contract
-      const canLogin = await contract.login(user_address);
-      const authMethods = await contract.getUserAuthMethods(user_address);
+      const contract = getContract();
+      const serviceAccount = getServiceAccount();
+      const api = getAPI();
 
-      return { canLogin, authMethods };
+      // Check if user has identity
+      const { result, output } = await contract.query.hasIdentity(
+        serviceAccount.address,
+        {
+          gasLimit: {
+            refTime: 1000000000,
+            proofSize: 100000,
+          } as any,
+        },
+        user_address
+      );
+
+      if (result.isOk && output) {
+        const canLogin = output.toHuman() as boolean;
+        
+        // If user can login, get their auth methods
+        if (canLogin) {
+          const authMethods = await this.getUserAuthMethods(user_address);
+          return { canLogin, authMethods };
+        }
+      }
+
+      return { canLogin: false, authMethods: [] };
+
     } catch (error: any) {
+      console.error('Contract query error:', error);
       throw new Error(`Contract query failed: ${error.message}`);
     }
   }
@@ -63,14 +125,40 @@ export class ContractService {
    * Get user's authentication methods from contract
    */
   static async getUserAuthMethods(userAddress: string): Promise<string[]> {
-    if (!ValidatorUtil.isValidAddress(userAddress)) {
-      throw new Error('Invalid wallet address');
+    if (!isContractAvailable()) {
+      console.warn('Contract not available for auth methods check');
+      return [];
     }
 
     try {
-      const authMethods = await contract.getUserAuthMethods(userAddress);
-      return authMethods;
+      const contract = getContract();
+      const serviceAccount = getServiceAccount();
+      const api = getAPI();
+
+      const { result, output } = await contract.query.getIdentity(
+        serviceAccount.address,
+        {
+          gasLimit: {
+            refTime: 1000000000,
+            proofSize: 100000,
+          } as any,
+        },
+        userAddress
+      );
+
+      if (result.isOk && output) {
+        const identity = output.toHuman() as any;
+        
+        // Extract auth methods from identity data
+        if (identity && identity.socialProvider) {
+          return [identity.socialProvider];
+        }
+      }
+
+      return [];
+
     } catch (error: any) {
+      console.error('Failed to get auth methods:', error);
       throw new Error(`Failed to get auth methods: ${error.message}`);
     }
   }
@@ -135,46 +223,48 @@ export class ContractService {
 
   /**
    * Sync contract events from blockchain
+   * Note: This is a placeholder for Polkadot event syncing
    */
   static async syncContractEvents(): Promise<{ syncedEvents: number }> {
     try {
-      const latestCachedBlock = await this.getLatestCachedBlock();
-      const currentBlock = await provider.getBlockNumber();
-
-      if (latestCachedBlock >= currentBlock) {
+      if (!isContractAvailable()) {
+        console.warn('Contract not available for event syncing');
         return { syncedEvents: 0 };
       }
 
-      // Get events from contract
-      const filter = contract.filters.UserRegistered();
-      const events = await contract.queryFilter(
-        filter,
-        latestCachedBlock + 1,
-        currentBlock
-      );
+      // TODO: Implement proper event syncing for Polkadot
+      // This would involve listening to system events and filtering for contract events
+      console.log('📊 Event syncing for Polkadot contracts - implementation pending');
+      
+      return { syncedEvents: 0 };
 
-      let syncedCount = 0;
-
-      for (const event of events) {
-        // Type guard to check if event is EventLog
-        if ('args' in event && event.args) {
-          await this.storeContractEvent({
-            event_name: 'UserRegistered',
-            block_number: event.blockNumber,
-            transaction_hash: event.transactionHash,
-            user_address: event.args[0], // user address
-            data: {
-              auth_method: event.args[1], // auth method
-              timestamp: event.args[2]?.toString(), // timestamp
-            },
-          });
-          syncedCount++;
-        }
-      }
-
-      return { syncedEvents: syncedCount };
     } catch (error: any) {
+      console.error('Event sync error:', error);
       throw new Error(`Event sync failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get contract connection status
+   */
+  static getContractStatus(): {
+    isConnected: boolean;
+    contractAvailable: boolean;
+    contractAddress: string;
+  } {
+    try {
+      const api = getAPI();
+      return {
+        isConnected: api.isConnected,
+        contractAvailable: isContractAvailable(),
+        contractAddress: process.env.CONTRACT_ADDRESS || 'Not configured',
+      };
+    } catch (error) {
+      return {
+        isConnected: false,
+        contractAvailable: false,
+        contractAddress: 'Not configured',
+      };
     }
   }
 }

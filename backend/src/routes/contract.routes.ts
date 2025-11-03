@@ -12,8 +12,8 @@ router.get('/user/:user_address/can-login',
   generalLimiter,
   [
     param('user_address')
-      .matches(/^0x[a-fA-F0-9]{40}$/)
-      .withMessage('Invalid Ethereum address'),
+      .matches(/^[1-9A-HJ-NP-Za-km-z]{47,48}$/)
+      .withMessage('Invalid Substrate address'),
     handleValidationErrors,
   ],
   ContractController.canUserLogin
@@ -23,8 +23,8 @@ router.get('/user/:user_address/auth-methods',
   generalLimiter,
   [
     param('user_address')
-      .matches(/^0x[a-fA-F0-9]{40}$/)
-      .withMessage('Invalid Ethereum address'),
+      .matches(/^[1-9A-HJ-NP-Za-km-z]{47,48}$/)
+      .withMessage('Invalid Substrate address'),
     handleValidationErrors,
   ],
   ContractController.getUserAuthMethods
@@ -34,8 +34,8 @@ router.get('/user/:user_address/events',
   generalLimiter,
   [
     param('user_address')
-      .matches(/^0x[a-fA-F0-9]{40}$/)
-      .withMessage('Invalid Ethereum address'),
+      .matches(/^[1-9A-HJ-NP-Za-km-z]{47,48}$/)
+      .withMessage('Invalid Substrate address'),
     handleValidationErrors,
   ],
   ContractController.getUserEvents
@@ -55,6 +55,7 @@ router.get('/events/transaction/:transaction_hash',
 );
 
 router.get('/listener/status', ContractController.getListenerStatus);
+router.get('/status', ContractController.getContractStatus);
 
 // Protected routes (write operations)
 router.post('/register',
@@ -62,8 +63,8 @@ router.post('/register',
   generalLimiter,
   [
     body('user_address')
-      .matches(/^0x[a-fA-F0-9]{40}$/)
-      .withMessage('Invalid Ethereum address'),
+      .matches(/^[1-9A-HJ-NP-Za-km-z]{47,48}$/)
+      .withMessage('Invalid Substrate address'),
     body('auth_method')
       .trim()
       .isLength({ min: 1, max: 50 })
