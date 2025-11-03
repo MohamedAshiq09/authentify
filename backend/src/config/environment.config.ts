@@ -16,9 +16,10 @@ interface EnvConfig {
   JWT_EXPIRY: string;
   JWT_REFRESH_EXPIRY: string;
   
+  // Polkadot Contract Configuration
   CONTRACT_ADDRESS: string;
-  RPC_URL: string;
-  SERVICE_ACCOUNT_PRIVATE_KEY: string;
+  SUBSTRATE_WS_ENDPOINT: string;
+  SERVICE_ACCOUNT_SEED: string;
   
   RATE_LIMIT_WINDOW_MS: number;
   RATE_LIMIT_MAX_REQUESTS: number;
@@ -50,9 +51,9 @@ export const config: EnvConfig = {
   JWT_EXPIRY: getOptionalEnvVariable('JWT_EXPIRY', '15m'),
   JWT_REFRESH_EXPIRY: getOptionalEnvVariable('JWT_REFRESH_EXPIRY', '7d'),
   
-  CONTRACT_ADDRESS: getOptionalEnvVariable('CONTRACT_ADDRESS', '0x0000000000000000000000000000000000000000'),
-  RPC_URL: getOptionalEnvVariable('RPC_URL', 'https://sepolia.infura.io/v3/YOUR_INFURA_KEY'),
-  SERVICE_ACCOUNT_PRIVATE_KEY: getOptionalEnvVariable('SERVICE_ACCOUNT_PRIVATE_KEY', '0x0000000000000000000000000000000000000000000000000000000000000000'),
+  CONTRACT_ADDRESS: getOptionalEnvVariable('CONTRACT_ADDRESS', '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'),
+  SUBSTRATE_WS_ENDPOINT: getOptionalEnvVariable('SUBSTRATE_WS_ENDPOINT', 'ws://127.0.0.1:9944'),
+  SERVICE_ACCOUNT_SEED: getOptionalEnvVariable('SERVICE_ACCOUNT_SEED', '//Alice'),
   
   RATE_LIMIT_WINDOW_MS: parseInt(getOptionalEnvVariable('RATE_LIMIT_WINDOW_MS', '900000')),
   RATE_LIMIT_MAX_REQUESTS: parseInt(getOptionalEnvVariable('RATE_LIMIT_MAX_REQUESTS', '100')),

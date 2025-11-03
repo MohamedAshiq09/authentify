@@ -149,4 +149,17 @@ export class ContractController {
       return ResponseUtil.error(res, error.message);
     }
   }
+
+  /**
+   * Get contract connection status
+   */
+  static async getContractStatus(req: Request, res: Response) {
+    try {
+      const status = ContractService.getContractStatus();
+
+      return ResponseUtil.success(res, status);
+    } catch (error: any) {
+      return ResponseUtil.error(res, error.message);
+    }
+  }
 }
