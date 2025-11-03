@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 
 // Import configuration
 import { config } from './config/environment.config';
+import { initializePolkadotAPI, closeAPI } from './config/contract.config';
 
 // Import middleware
 import { generalLimiter } from './middleware/ratelimit.middleware';
@@ -66,13 +67,14 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 // Graceful shutdown handler
-const gracefulShutdown = () => {
+const gracefulShutdown = async () => {
   console.log('Received shutdown signal, closing server gracefully...');
   
   // Stop contract event listener
   EventsService.stopEventListener();
   
-  // Clean up any other resources here
+  // Close Polkadot API connection
+  await closeAPI();
   
   process.exit(0);
 };
@@ -81,31 +83,49 @@ const gracefulShutdown = () => {
 process.on('SIGTERM', gracefulShutdown);
 process.on('SIGINT', gracefulShutdown);
 
-// Start server
-const PORT = config.PORT || 5000;
+// Initialize Polkadot and start server
+async function startServer() {
+  try {
+    // Initialize Polkadot API
+    console.log('🔗 Initializing Polkadot connection...');
+    await initializePolkadotAPI();
 
-app.listen(PORT, () => {
-  console.log(`🚀 Authentify Backend running on port ${PORT}`);
-  console.log(`📊 Environment: ${config.NODE_ENV}`);
-  console.log(`🌐 Frontend URL: ${config.FRONTEND_URL}`);
-  
-  // Start contract event listener in production
-  if (config.NODE_ENV === 'production') {
-    console.log('🔗 Starting contract event listener...');
-    EventsService.startEventListener();
-  }
-  
-  // Schedule cleanup of expired sessions (every hour)
-  setInterval(async () => {
-    try {
-      const result = await SessionService.cleanupExpiredSessions();
-      if (result.deletedCount > 0) {
-        console.log(`🧹 Cleaned up ${result.deletedCount} expired sessions`);
+    // Start server
+    const PORT = config.PORT || 5000;
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Authentify Backend running on port ${PORT}`);
+      console.log(`📊 Environment: ${config.NODE_ENV}`);
+      console.log(`🌐 Frontend URL: ${config.FRONTEND_URL}`);
+      console.log(`🔗 Substrate endpoint: ${config.SUBSTRATE_WS_ENDPOINT}`);
+      
+      // Start contract event listener in production
+      if (config.NODE_ENV === 'production') {
+        console.log('🔗 Starting contract event listener...');
+        EventsService.startEventListener();
       }
-    } catch (error) {
-      console.error('Failed to cleanup expired sessions:', error);
-    }
-  }, 60 * 60 * 1000); // 1 hour
-});
+      
+      // Schedule cleanup of expired sessions (every hour)
+      setInterval(async () => {
+        try {
+          const result = await SessionService.cleanupExpiredSessions();
+          if (result.deletedCount > 0) {
+            console.log(`🧹 Cleaned up ${result.deletedCount} expired sessions`);
+          }
+        } catch (error) {
+          console.error('Failed to cleanup expired sessions:', error);
+        }
+      }, 60 * 60 * 1000); // 1 hour
+    });
+
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    console.error('💡 Make sure Substrate node is running on:', config.SUBSTRATE_WS_ENDPOINT);
+    process.exit(1);
+  }
+}
+
+// Start the server
+startServer();
 
 export default app;
