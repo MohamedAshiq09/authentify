@@ -22,8 +22,8 @@ export const validateRegister = [
     .withMessage('Password must contain uppercase, lowercase, and number'),
   body('wallet_address')
     .optional()
-    .matches(/^0x[a-fA-F0-9]{40}$/)
-    .withMessage('Invalid Ethereum address'),
+    .matches(/^[1-9A-HJ-NP-Za-km-z]{47,48}$/)
+    .withMessage('Invalid Substrate address'),
   handleValidationErrors,
 ];
 

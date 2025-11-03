@@ -43,8 +43,8 @@ router.put('/wallet',
   authenticateToken,
   [
     body('wallet_address')
-      .matches(/^0x[a-fA-F0-9]{40}$/)
-      .withMessage('Invalid Ethereum address'),
+      .matches(/^[1-9A-HJ-NP-Za-km-z]{47,48}$/)
+      .withMessage('Invalid Substrate address'),
     handleValidationErrors,
   ],
   AuthController.updateWallet
