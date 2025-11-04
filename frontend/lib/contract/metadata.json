@@ -1,0 +1,201 @@
+{
+  "source": {
+    "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "language": "ink! 4.0.0",
+    "compiler": "rustc 1.70.0"
+  },
+  "contract": {
+    "name": "authentify_contract",
+    "version": "0.1.0",
+    "authors": ["Authentify Team"]
+  },
+  "spec": {
+    "constructors": [],
+    "docs": [],
+    "events": [],
+    "messages": [
+      {
+        "args": [
+          {
+            "label": "user",
+            "type": {
+              "displayName": ["AccountId"],
+              "type": 0
+            }
+          },
+          {
+            "label": "password_hash",
+            "type": {
+              "displayName": ["String"],
+              "type": 4
+            }
+          },
+          {
+            "label": "social_id_hash",
+            "type": {
+              "displayName": ["String"],
+              "type": 4
+            }
+          },
+          {
+            "label": "social_provider",
+            "type": {
+              "displayName": ["String"],
+              "type": 4
+            }
+          }
+        ],
+        "docs": ["Register a new identity"],
+        "label": "registerIdentity",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": ["Result"],
+          "type": 5
+        },
+        "selector": "0x12345678"
+      },
+      {
+        "args": [
+          {
+            "label": "user",
+            "type": {
+              "displayName": ["AccountId"],
+              "type": 0
+            }
+          }
+        ],
+        "docs": ["Check if user has identity"],
+        "label": "hasIdentity",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": ["bool"],
+          "type": 1
+        },
+        "selector": "0x87654321"
+      },
+      {
+        "args": [
+          {
+            "label": "user",
+            "type": {
+              "displayName": ["AccountId"],
+              "type": 0
+            }
+          }
+        ],
+        "docs": ["Get user identity"],
+        "label": "getIdentity",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": ["Option"],
+          "type": 6
+        },
+        "selector": "0x11111111"
+      }
+    ]
+  },
+  "types": [
+    {
+      "id": 0,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "type": 1,
+                "typeName": "[u8; 32]"
+              }
+            ]
+          }
+        },
+        "path": ["ink_primitives", "types", "AccountId"]
+      }
+    },
+    {
+      "id": 1,
+      "type": {
+        "def": {
+          "array": {
+            "len": 32,
+            "type": 2
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": {
+        "def": {
+          "primitive": "u8"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": {
+        "def": {
+          "primitive": "str"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 3
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 4
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "path": ["Result"]
+      }
+    },
+    {
+      "id": 6,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "index": 0,
+                "name": "None"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 7
+                  }
+                ],
+                "index": 1,
+                "name": "Some"
+              }
+            ]
+          }
+        },
+        "path": ["Option"]
+      }
+    }
+  ],
+  "version": "4"
+}
