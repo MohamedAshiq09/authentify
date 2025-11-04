@@ -1,7 +1,7 @@
 export interface InjectedAccountWithMeta {
   address: string;
   meta: {
-    genesisHash?: string;
+    genesisHash?: string | null;  // ✅ Fixed: Added | null
     name?: string;
     source: string;
   };
