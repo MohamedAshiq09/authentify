@@ -5,6 +5,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://authentify.dev'),
   title: 'Authentify - Polkadot Authentication',
   description: 'Decentralized identity authentication system built on Polkadot',
   keywords: ['authentication', 'polkadot', 'blockchain', 'web3', 'identity'],

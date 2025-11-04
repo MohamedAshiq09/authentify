@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { useWalletStore } from '../lib/store/wallet-store';
 import { isExtensionAvailable, getAccounts } from '../lib/polkadot/wallet';
+import { InjectedAccountWithMeta } from '@polkadot/extension-inject/types';
 
 export function useWallet() {
   const {
@@ -70,7 +71,7 @@ export function useWallet() {
   }, [reset]);
 
   // Select account
-  const selectAccount = useCallback((account: any) => {
+  const selectAccount = useCallback((account: InjectedAccountWithMeta) => {
     setSelectedAccount(account);
   }, [setSelectedAccount]);
 

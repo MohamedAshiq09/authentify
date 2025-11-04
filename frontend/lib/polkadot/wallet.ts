@@ -1,5 +1,5 @@
 import { web3Accounts, web3Enable, web3FromAddress } from '@polkadot/extension-dapp';
-import { InjectedAccountWithMeta } from '../types/wallet';
+import { InjectedAccountWithMeta } from '@polkadot/extension-inject/types';
 
 /**
  * Check if Polkadot.js extension is available

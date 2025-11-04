@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { InjectedAccountWithMeta } from '../types/wallet';
+import { InjectedAccountWithMeta } from '@polkadot/extension-inject/types';
 
 interface WalletState {
   isConnected: boolean;

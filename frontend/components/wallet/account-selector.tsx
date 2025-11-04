@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle2, User, Wallet, RefreshCw } from 'lucide-react';
-import { InjectedAccountWithMeta } from '@/lib/types/wallet';
+import { InjectedAccountWithMeta } from '@polkadot/extension-inject/types';
 import { formatAddress } from '@/lib/polkadot/wallet';
 
 interface AccountSelectorProps {
