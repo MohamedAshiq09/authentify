@@ -9,10 +9,10 @@ export interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   ({ className, variant = 'default', children, ...props }, ref) => {
     const variants = {
-      default: 'bg-blue-50 text-blue-900 border-blue-200',
-      destructive: 'bg-red-50 text-red-900 border-red-200',
-      success: 'bg-green-50 text-green-900 border-green-200',
-      warning: 'bg-yellow-50 text-yellow-900 border-yellow-200',
+      default: 'bg-blue-500/10 text-blue-300 border-blue-500/20',
+      destructive: 'bg-red-500/10 text-red-300 border-red-500/20',
+      success: 'bg-green-500/10 text-green-300 border-green-500/20',
+      warning: 'bg-yellow-500/10 text-yellow-300 border-yellow-500/20',
     };
 
     const icons = {

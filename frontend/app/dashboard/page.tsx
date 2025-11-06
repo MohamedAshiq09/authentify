@@ -21,7 +21,10 @@ import {
   ExternalLink,
   Activity,
   Award,
-  Zap
+  Zap,
+  Settings,
+  TrendingUp,
+  Database
 } from 'lucide-react';
 import { formatAddress } from '@/lib/polkadot/wallet';
 
@@ -41,7 +44,6 @@ export default function DashboardPage() {
   }, [isAuthenticated, isLoading, router]);
 
   useEffect(() => {
-    // Fetch contract identity
     const fetchIdentity = async () => {
       if (user && selectedAccount) {
         try {
@@ -64,34 +66,34 @@ export default function DashboardPage() {
 
   if (isLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <Spinner size="lg" />
-          <p className="mt-4 text-gray-600">Loading your dashboard...</p>
+          <p className="mt-4 text-muted-foreground">Loading your dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white border-b shadow-sm sticky top-0 z-50">
+      <header className="border-b border-border/50 sticky top-0 z-50 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg blur opacity-50"></div>
-                <div className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-pink-600">
+                <div className="absolute inset-0 bg-gradient-primary rounded-lg blur-lg opacity-50"></div>
+                <div className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-primary">
                   <Shield className="h-6 w-6 text-white" />
                 </div>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Authentify</h1>
-                <p className="text-xs text-gray-500">Decentralized Identity</p>
+                <h1 className="text-xl font-bold">Authentify</h1>
+                <p className="text-xs text-muted-foreground">Decentralized Identity</p>
               </div>
             </div>
-            <Button variant="outline" onClick={logout} className="border-2">
+            <Button variant="outline" onClick={logout} className="btn-secondary">
               <LogOut className="mr-2 h-4 w-4" />
               Logout
             </Button>
@@ -102,76 +104,76 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
-        <div className="mb-8 animate-slide-up">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {user.email.split('@')[0]}! 👋
+        <div className="mb-8">
+          <h2 className="text-4xl font-bold mb-2">
+            Welcome back, <span className="text-gradient">{user.email.split('@')[0]}</span>! 👋
           </h2>
-          <p className="text-gray-600">Manage your decentralized identity and account settings</p>
+          <p className="text-muted-foreground text-lg">Manage your decentralized identity and account settings</p>
         </div>
 
-        {/* Status Alerts */}
+        {/* Status Alert */}
         {isContractAvailable && contractIdentity && (
-          <Alert className="mb-6 border-green-200 bg-green-50 animate-fade-in">
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
-            <AlertDescription className="text-green-800">
+          <Alert className="mb-6 border-green-500/20 bg-green-500/10">
+            <CheckCircle2 className="h-5 w-5 text-green-400" />
+            <AlertDescription className="text-green-300">
               <span className="font-semibold">Identity verified on-chain</span> - Your decentralized identity is active on the Polkadot blockchain
             </AlertDescription>
           </Alert>
         )}
 
         {/* Stats Cards */}
-        <div className="grid md:grid-cols-4 gap-4 mb-8">
-          <Card className="card-hover border-l-4 border-l-blue-500">
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
+          <Card className="card-dark border-l-4 border-l-blue-500">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Account Status</p>
-                  <p className="text-2xl font-bold text-gray-900">Active</p>
+                  <p className="text-sm text-muted-foreground mb-1">Account Status</p>
+                  <p className="text-3xl font-bold">Active</p>
                 </div>
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <Activity className="h-6 w-6 text-blue-600" />
+                <div className="p-4 bg-blue-500/10 rounded-xl border border-blue-500/20">
+                  <Activity className="h-7 w-7 text-blue-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="card-hover border-l-4 border-l-green-500">
+          <Card className="card-dark border-l-4 border-l-green-500">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">On-Chain</p>
-                  <p className="text-2xl font-bold text-gray-900">Verified</p>
+                  <p className="text-sm text-muted-foreground mb-1">On-Chain</p>
+                  <p className="text-3xl font-bold">Verified</p>
                 </div>
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <CheckCircle2 className="h-6 w-6 text-green-600" />
+                <div className="p-4 bg-green-500/10 rounded-xl border border-green-500/20">
+                  <CheckCircle2 className="h-7 w-7 text-green-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="card-hover border-l-4 border-l-purple-500">
+          <Card className="card-dark border-l-4 border-l-purple-500">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Auth Method</p>
-                  <p className="text-2xl font-bold text-gray-900">Email</p>
+                  <p className="text-sm text-muted-foreground mb-1">Auth Method</p>
+                  <p className="text-3xl font-bold">Email</p>
                 </div>
-                <div className="p-3 bg-purple-100 rounded-lg">
-                  <Shield className="h-6 w-6 text-purple-600" />
+                <div className="p-4 bg-purple-500/10 rounded-xl border border-purple-500/20">
+                  <Shield className="h-7 w-7 text-purple-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="card-hover border-l-4 border-l-yellow-500">
+          <Card className="card-dark border-l-4 border-l-pink-500">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Security</p>
-                  <p className="text-2xl font-bold text-gray-900">High</p>
+                  <p className="text-sm text-muted-foreground mb-1">Security</p>
+                  <p className="text-3xl font-bold">High</p>
                 </div>
-                <div className="p-3 bg-yellow-100 rounded-lg">
-                  <Zap className="h-6 w-6 text-yellow-600" />
+                <div className="p-4 bg-pink-500/10 rounded-xl border border-pink-500/20">
+                  <Zap className="h-7 w-7 text-pink-400" />
                 </div>
               </div>
             </CardContent>
@@ -180,47 +182,45 @@ export default function DashboardPage() {
 
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Profile Card */}
-          <Card className="shadow-lg border-2 animate-fade-in">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b">
+          <Card className="card-dark border-border/50">
+            <CardHeader className="border-b border-border/50 bg-card/50">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-white rounded-lg shadow">
-                  <User className="h-5 w-5 text-purple-600" />
+                <div className="p-3 bg-purple-500/10 rounded-xl border border-purple-500/20">
+                  <User className="h-6 w-6 text-purple-400" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl">Profile Information</CardTitle>
+                  <CardTitle className="text-2xl">Profile Information</CardTitle>
                   <CardDescription>Your account details and settings</CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="pt-6 space-y-6">
               <div className="space-y-4">
-                <div className="flex items-start justify-between pb-4 border-b">
+                <div className="flex items-start justify-between pb-4 border-b border-border/50">
                   <div className="flex items-center gap-3">
-                    <Mail className="h-5 w-5 text-gray-400" />
+                    <Mail className="h-5 w-5 text-muted-foreground" />
                     <div>
-                      <p className="text-sm text-gray-600">Email Address</p>
-                      <p className="font-semibold text-gray-900">{user.email}</p>
+                      <p className="text-sm text-muted-foreground">Email Address</p>
+                      <p className="font-semibold">{user.email}</p>
                     </div>
                   </div>
-                  <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-                    Verified
-                  </span>
+                  <span className="badge badge-success">Verified</span>
                 </div>
 
-                <div className="flex items-start gap-3 pb-4 border-b">
-                  <User className="h-5 w-5 text-gray-400 mt-0.5" />
+                <div className="flex items-start gap-3 pb-4 border-b border-border/50">
+                  <User className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm text-gray-600">User ID</p>
+                    <p className="text-sm text-muted-foreground">User ID</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <p className="font-mono text-sm text-gray-900 break-all">{user.id}</p>
+                      <p className="font-mono text-sm break-all">{user.id}</p>
                       <button
                         onClick={() => copyToClipboard(user.id)}
-                        className="p-1 hover:bg-gray-100 rounded transition-colors"
+                        className="p-1.5 hover:bg-secondary rounded transition-colors"
                       >
                         {copied ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          <CheckCircle2 className="h-4 w-4 text-green-400" />
                         ) : (
-                          <Copy className="h-4 w-4 text-gray-400" />
+                          <Copy className="h-4 w-4 text-muted-foreground" />
                         )}
                       </button>
                     </div>
@@ -228,10 +228,10 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-gray-400" />
+                  <Calendar className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-gray-600">Member Since</p>
-                    <p className="font-semibold text-gray-900">
+                    <p className="text-sm text-muted-foreground">Member Since</p>
+                    <p className="font-semibold">
                       {new Date(user.created_at).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
@@ -242,8 +242,9 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t">
-                <Button variant="outline" className="w-full border-2">
+              <div className="pt-4 border-t border-border/50">
+                <Button variant="outline" className="w-full btn-secondary">
+                  <Settings className="mr-2 h-4 w-4" />
                   Edit Profile Settings
                 </Button>
               </div>
@@ -251,14 +252,14 @@ export default function DashboardPage() {
           </Card>
 
           {/* Wallet Card */}
-          <Card className="shadow-lg border-2 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
+          <Card className="card-dark border-border/50">
+            <CardHeader className="border-b border-border/50 bg-card/50">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-white rounded-lg shadow">
-                  <Wallet className="h-5 w-5 text-blue-600" />
+                <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
+                  <Wallet className="h-6 w-6 text-blue-400" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl">Wallet Information</CardTitle>
+                  <CardTitle className="text-2xl">Wallet Information</CardTitle>
                   <CardDescription>Your blockchain wallet details</CardDescription>
                 </div>
               </div>
@@ -266,48 +267,46 @@ export default function DashboardPage() {
             <CardContent className="pt-6 space-y-6">
               {selectedAccount ? (
                 <div className="space-y-4">
-                  <div className="pb-4 border-b">
-                    <p className="text-sm text-gray-600 mb-2">Wallet Address</p>
+                  <div className="pb-4 border-b border-border/50">
+                    <p className="text-sm text-muted-foreground mb-2">Wallet Address</p>
                     <div className="flex items-center gap-2">
-                      <p className="font-mono text-sm text-gray-900 break-all flex-1">
+                      <p className="font-mono text-sm break-all flex-1">
                         {selectedAccount.address}
                       </p>
                       <button
                         onClick={() => copyToClipboard(selectedAccount.address)}
-                        className="p-2 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
+                        className="p-2 hover:bg-secondary rounded transition-colors flex-shrink-0"
                       >
                         {copied ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          <CheckCircle2 className="h-4 w-4 text-green-400" />
                         ) : (
-                          <Copy className="h-4 w-4 text-gray-400" />
+                          <Copy className="h-4 w-4 text-muted-foreground" />
                         )}
                       </button>
                     </div>
                   </div>
 
-                  <div className="pb-4 border-b">
-                    <p className="text-sm text-gray-600 mb-2">Account Name</p>
-                    <p className="font-semibold text-gray-900">
-                      {selectedAccount.meta.name || 'Unnamed Account'}
-                    </p>
+                  <div className="pb-4 border-b border-border/50">
+                    <p className="text-sm text-muted-foreground mb-2">Account Name</p>
+                    <p className="font-semibold">{selectedAccount.meta.name || 'Unnamed Account'}</p>
                   </div>
 
                   <div>
-                    <p className="text-sm text-gray-600 mb-2">Network</p>
+                    <p className="text-sm text-muted-foreground mb-2">Network</p>
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <p className="font-semibold text-gray-900">Polkadot</p>
+                      <p className="font-semibold">Polkadot</p>
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t">
+                  <div className="pt-4 border-t border-border/50">
                     <a
                       href={`https://polkadot.subscan.io/account/${selectedAccount.address}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-full"
                     >
-                      <Button variant="outline" className="w-full border-2">
+                      <Button variant="outline" className="w-full btn-secondary">
                         View on Explorer
                         <ExternalLink className="ml-2 h-4 w-4" />
                       </Button>
@@ -315,10 +314,10 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <Wallet className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                  <p className="text-gray-600 mb-4">No wallet connected</p>
-                  <Button variant="outline" className="border-2">
+                <div className="text-center py-12">
+                  <Wallet className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <p className="text-muted-foreground mb-6">No wallet connected</p>
+                  <Button variant="outline" className="btn-secondary">
                     <Wallet className="mr-2 h-4 w-4" />
                     Connect Wallet
                   </Button>
@@ -330,14 +329,14 @@ export default function DashboardPage() {
 
         {/* Blockchain Identity Card */}
         {contractIdentity && (
-          <Card className="mt-6 shadow-lg border-2 border-purple-200 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b">
+          <Card className="mt-6 card-dark border-primary/20">
+            <CardHeader className="border-b border-border/50 bg-gradient-to-r from-pink-500/10 to-purple-500/10">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-white rounded-lg shadow">
-                  <Award className="h-5 w-5 text-purple-600" />
+                <div className="p-3 bg-purple-500/10 rounded-xl border border-purple-500/20">
+                  <Award className="h-6 w-6 text-purple-400" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl">Blockchain Identity</CardTitle>
+                  <CardTitle className="text-2xl">Blockchain Identity</CardTitle>
                   <CardDescription>Your on-chain identity details</CardDescription>
                 </div>
               </div>
@@ -345,17 +344,17 @@ export default function DashboardPage() {
             <CardContent className="pt-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Contract Status</p>
+                  <p className="text-sm text-muted-foreground mb-2">Contract Status</p>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    <p className="font-semibold text-gray-900">Registered</p>
+                    <CheckCircle2 className="h-5 w-5 text-green-400" />
+                    <p className="font-semibold">Registered</p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Verification</p>
+                  <p className="text-sm text-muted-foreground mb-2">Verification</p>
                   <div className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-blue-600" />
-                    <p className="font-semibold text-gray-900">Verified</p>
+                    <Shield className="h-5 w-5 text-blue-400" />
+                    <p className="font-semibold">Verified</p>
                   </div>
                 </div>
               </div>
@@ -364,23 +363,23 @@ export default function DashboardPage() {
         )}
 
         {/* Quick Actions */}
-        <Card className="mt-6 shadow-lg animate-fade-in" style={{ animationDelay: '0.3s' }}>
+        <Card className="mt-6 card-dark">
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+            <CardTitle className="text-2xl">Quick Actions</CardTitle>
             <CardDescription>Common tasks and settings</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-3 gap-4">
-              <Button variant="outline" className="h-20 flex-col border-2 hover:border-purple-200 hover:bg-purple-50">
-                <Shield className="h-6 w-6 mb-2 text-purple-600" />
+              <Button variant="outline" className="h-24 flex-col btn-secondary card-hover">
+                <Settings className="h-8 w-8 mb-2 text-purple-400" />
                 <span>Security Settings</span>
               </Button>
-              <Button variant="outline" className="h-20 flex-col border-2 hover:border-blue-200 hover:bg-blue-50">
-                <Activity className="h-6 w-6 mb-2 text-blue-600" />
+              <Button variant="outline" className="h-24 flex-col btn-secondary card-hover">
+                <TrendingUp className="h-8 w-8 mb-2 text-blue-400" />
                 <span>Activity Log</span>
               </Button>
-              <Button variant="outline" className="h-20 flex-col border-2 hover:border-green-200 hover:bg-green-50">
-                <ExternalLink className="h-6 w-6 mb-2 text-green-600" />
+              <Button variant="outline" className="h-24 flex-col btn-secondary card-hover">
+                <Database className="h-8 w-8 mb-2 text-green-400" />
                 <span>API Documentation</span>
               </Button>
             </div>
