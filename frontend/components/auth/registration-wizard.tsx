@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { WalletConnect } from '@/components/wallet/wallet-connect';
 import { AccountSelector } from '@/components/wallet/account-selector';
 import { SocialAuth } from '@/components/auth/social-auth';
+import { BiometricAuth } from '@/components/auth/biometric-auth';
 import { 
   Shield, 
   Wallet, 
@@ -22,7 +23,8 @@ import {
   AlertCircle, 
   ArrowRight, 
   ArrowLeft,
-  Users
+  Users,
+  Fingerprint
 } from 'lucide-react';
 
 type Step = 'wallet' | 'social' | 'credentials' | 'complete';
@@ -42,6 +44,7 @@ export function RegistrationWizard({ onComplete, className }: RegistrationWizard
   const [error, setError] = useState<string | null>(null);
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [socialProvider, setSocialProvider] = useState<string | null>(null);
+  const [showBiometricSetup, setShowBiometricSetup] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -116,8 +119,14 @@ export function RegistrationWizard({ onComplete, className }: RegistrationWizard
         wallet_address: selectedAccount.address,
       });
 
-      // Register on smart contract
-      await registerUser(selectedAccount.address, socialProvider || 'email');
+      // Register on smart contract (optional - only if contract is available)
+      try {
+        await registerUser(selectedAccount.address, socialProvider || 'email');
+        console.log('✅ User registered on smart contract');
+      } catch (contractError: any) {
+        console.warn('⚠️ Smart contract registration failed (continuing without blockchain features):', contractError.message);
+        // Continue without contract registration - this is optional
+      }
 
       setCurrentStep('complete');
     } catch (error: any) {
@@ -349,6 +358,70 @@ export function RegistrationWizard({ onComplete, className }: RegistrationWizard
                 )}
               </Button>
             </div>
+
+            {/* Optional Biometric Setup */}
+            <div className="relative mt-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-gray-500">Optional: Set Up Biometric (Skip for Now)</span>
+              </div>
+            </div>
+
+            <div className="text-center py-4">
+              <p className="text-sm text-gray-600 mb-4">
+                You can set up biometric authentication now or later in your dashboard.
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    // Skip biometric setup and go to complete
+                    setCurrentStep('complete');
+                  }}
+                  className="flex-1"
+                >
+                  Skip for Now
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setShowBiometricSetup(true)}
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90"
+                >
+                  <Fingerprint className="mr-2 h-4 w-4" />
+                  Set Up Now
+                </Button>
+              </div>
+            </div>
+
+            {/* Biometric Setup Component */}
+            {showBiometricSetup && (
+              <div className="border-2 border-dashed border-purple-200 rounded-lg p-4 mt-4">
+                <BiometricAuth
+                  userEmail={formData.email}
+                  userName={formData.email.split('@')[0]}
+                  mode="register"
+                  showTitle={false}
+                  compact={true}
+                  onRegisterSuccess={(credential) => {
+                    console.log('Biometric registered:', credential);
+                    setShowBiometricSetup(false);
+                    setCurrentStep('complete');
+                  }}
+                />
+                <div className="mt-4 text-center">
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => setShowBiometricSetup(false)}
+                    className="text-gray-500"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
           </form>
         )}
 

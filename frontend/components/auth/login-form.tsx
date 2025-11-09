@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SocialAuth } from '@/components/auth/social-auth';
+import { BiometricAuth } from '@/components/auth/biometric-auth';
 import { Shield, Mail, Lock, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 interface LoginFormProps {
@@ -225,6 +226,36 @@ export function LoginForm({
         </div>
 
         <SocialAuth onSocialAuth={handleSocialAuth} />
+
+        {/* Biometric Authentication */}
+        {formData.email && isValidEmail(formData.email) && (
+          <>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-gray-500">Or use biometric</span>
+              </div>
+            </div>
+
+            <BiometricAuth
+              userEmail={formData.email}
+              userName={formData.email.split('@')[0]}
+              mode="authenticate"
+              showTitle={false}
+              compact={true}
+              onAuthSuccess={(result) => {
+                console.log('Biometric auth successful:', result);
+                // Store tokens
+                localStorage.setItem('accessToken', result.accessToken);
+                localStorage.setItem('refreshToken', result.refreshToken);
+                onSuccess?.();
+                router.push(redirectTo);
+              }}
+            />
+          </>
+        )}
 
         {/* Register Link */}
         <div className="text-center pt-4 border-t">

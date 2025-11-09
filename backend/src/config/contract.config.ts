@@ -18,9 +18,18 @@ let serviceAccount: KeyringPair | null = null;
 export async function initializePolkadotAPI(): Promise<void> {
   try {
     console.log('🔗 Connecting to Substrate node...');
-    const provider = new WsProvider(config.SUBSTRATE_WS_ENDPOINT);
+    const provider = new WsProvider(config.SUBSTRATE_WS_ENDPOINT, false, undefined, 5000); // 5 second timeout
     
-    api = await ApiPromise.create({ provider });
+    // Add timeout to the connection attempt
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Connection timeout after 10 seconds')), 10000);
+    });
+    
+    api = await Promise.race([
+      ApiPromise.create({ provider }),
+      timeoutPromise
+    ]) as ApiPromise;
+    
     await api.isReady;
     
     console.log('✅ Connected to Substrate node');

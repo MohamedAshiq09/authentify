@@ -15,14 +15,18 @@ export const generalLimiter = rateLimit({
 
 // Strict rate limiting for auth endpoints
 export const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // limit each IP to 10 auth requests per windowMs
+  windowMs: config.NODE_ENV === 'development' ? 1 * 60 * 1000 : 15 * 60 * 1000, // 1 min in dev, 15 min in prod
+  max: config.NODE_ENV === 'development' ? 100 : 10, // 100 in dev, 10 in prod
   message: {
     success: false,
     message: 'Too many authentication attempts, please try again later.',
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for biometric endpoints in development
+    return config.NODE_ENV === 'development' && req.path.includes('/biometric/');
+  },
 });
 
 // Very strict rate limiting for password reset

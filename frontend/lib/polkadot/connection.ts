@@ -13,14 +13,24 @@ export async function initApi(): Promise<ApiPromise> {
   }
 
   try {
-    const provider = new WsProvider(WS_PROVIDER);
-    api = await ApiPromise.create({ provider });
+    const provider = new WsProvider(WS_PROVIDER, false, undefined, 5000); // 5 second timeout
+    
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Connection timeout')), 10000);
+    });
+    
+    api = await Promise.race([
+      ApiPromise.create({ provider }),
+      timeoutPromise
+    ]);
+    
     await api.isReady;
     
     console.log('✅ Connected to Polkadot node');
     return api;
   } catch (error) {
-    console.error('❌ Failed to connect to Polkadot node:', error);
+    console.warn('⚠️ Failed to connect to Polkadot node (continuing without blockchain features):', error);
     throw error;
   }
 }
@@ -77,7 +87,7 @@ export async function getChainInfo() {
 export async function getBalance(address: string): Promise<string> {
   try {
     const api = await getApi();
-    const { data: balance } = await api.query.system.account(address);
+    const { data: balance } = (await api.query.system.account(address)) as any;
     return balance.free.toString();
   } catch (error) {
     console.error('Failed to get balance:', error);

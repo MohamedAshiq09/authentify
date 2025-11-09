@@ -1,84 +1,64 @@
 import { Router } from 'express';
 import { SDKController } from '../controllers/sdk.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
-import { generalLimiter } from '../middleware/ratelimit.middleware';
-import { validateSDKClient, handleValidationErrors } from '../middleware/validation.middleware';
-import { body, param } from 'express-validator';
+import { generalLimiter, authLimiter } from '../middleware/ratelimit.middleware';
+import { handleValidationErrors } from '../middleware/validation.middleware';
+import { body, param, query } from 'express-validator';
 
 const router = Router();
 
-// Public routes
-router.post('/verify',
+// SDK Health Check
+router.get('/health', generalLimiter, SDKController.health);
+
+// Authentication SDK Routes
+router.post('/auth/register-complete',
+  authLimiter,
+  [
+    body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
+    body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+    body('username').optional().trim().isLength({ min: 1 }).withMessage('Username is required for biometric'),
+    body('enable_biometric').optional().isBoolean().withMessage('Enable biometric must be boolean'),
+    body('wallet_address').optional().matches(/^[1-9A-HJ-NP-Za-km-z]{47,48}$/).withMessage('Invalid wallet address'),
+    handleValidationErrors,
+  ],
+  SDKController.registerComplete
+);
+
+router.post('/auth/authenticate-complete',
+  authLimiter,
+  [
+    body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
+    body('password').optional().notEmpty().withMessage('Password cannot be empty'),
+    body('biometric_assertion').optional().isObject().withMessage('Invalid biometric assertion'),
+    handleValidationErrors,
+  ],
+  SDKController.authenticateComplete
+);
+
+router.get('/auth/methods',
   generalLimiter,
   [
-    body('client_id').notEmpty().withMessage('Client ID is required'),
-    body('client_secret').notEmpty().withMessage('Client secret is required'),
+    query('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
     handleValidationErrors,
   ],
-  SDKController.verifyClient
+  SDKController.getAuthMethods
 );
 
-router.get('/client/:client_id', generalLimiter, SDKController.getClient);
-router.get('/client/:client_id/rate-limit', generalLimiter, SDKController.getRateLimit);
+router.get('/profile', authenticateToken, SDKController.getProfile);
 
-// Protected routes
-router.post('/clients', authenticateToken, validateSDKClient, SDKController.createClient);
-router.get('/clients', authenticateToken, SDKController.getUserClients);
-
-router.put('/client/:client_id',
+router.post('/biometric/enable',
   authenticateToken,
   [
-    param('client_id').notEmpty().withMessage('Client ID is required'),
-    body('app_name')
-      .optional()
-      .trim()
-      .isLength({ min: 1, max: 100 })
-      .withMessage('App name must be 1-100 characters'),
-    body('app_url')
-      .optional()
-      .isURL()
-      .withMessage('Valid URL is required'),
-    body('redirect_uris')
-      .optional()
-      .isArray({ min: 1 })
-      .withMessage('At least one redirect URI is required'),
-    body('redirect_uris.*')
-      .optional()
-      .isURL()
-      .withMessage('All redirect URIs must be valid URLs'),
+    body('username').optional().trim().isLength({ min: 1 }).withMessage('Username is required'),
+    body('authenticator_type').optional().isIn(['platform', 'cross-platform']).withMessage('Invalid authenticator type'),
     handleValidationErrors,
   ],
-  SDKController.updateClient
+  SDKController.enableBiometric
 );
 
-router.delete('/client/:client_id',
-  authenticateToken,
-  [
-    param('client_id').notEmpty().withMessage('Client ID is required'),
-    handleValidationErrors,
-  ],
-  SDKController.deleteClient
-);
+router.post('/sessions/revoke-all', authenticateToken, SDKController.revokeAllSessions);
 
-router.post('/client/:client_id/regenerate-secret',
-  authenticateToken,
-  [
-    param('client_id').notEmpty().withMessage('Client ID is required'),
-    handleValidationErrors,
-  ],
-  SDKController.regenerateSecret
-);
-
-// Analytics routes
-router.get('/client/:client_id/analytics',
-  authenticateToken,
-  [
-    param('client_id').notEmpty().withMessage('Client ID is required'),
-    handleValidationErrors,
-  ],
-  SDKController.getClientAnalytics
-);
-
-router.get('/analytics/global', authenticateToken, SDKController.getGlobalAnalytics);
+// Note: Original SDK client management routes removed
+// This SDK now focuses on authentication services
 
 export default router;

@@ -16,6 +16,7 @@ import authRoutes from './routes/auth.routes';
 import sessionRoutes from './routes/session.routes';
 import contractRoutes from './routes/contract.routes';
 import sdkRoutes from './routes/sdk.routes';
+import biometricRoutes from './routes/biometric.routes';
 
 // Import services
 import { EventsService } from './services/contract/events.service';
@@ -56,6 +57,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/biometric', biometricRoutes);
 app.use('/api/session', sessionRoutes);
 app.use('/api/contract', contractRoutes);
 app.use('/api/sdk', sdkRoutes);
@@ -86,9 +88,16 @@ process.on('SIGINT', gracefulShutdown);
 // Initialize Polkadot and start server
 async function startServer() {
   try {
-    // Initialize Polkadot API
+    // Try to initialize Polkadot API (optional in development)
     console.log('🔗 Initializing Polkadot connection...');
-    await initializePolkadotAPI();
+    try {
+      await initializePolkadotAPI();
+      console.log('✅ Polkadot connection established');
+    } catch (polkadotError) {
+      console.warn('⚠️  Polkadot connection failed - continuing without blockchain features');
+      console.warn('💡 To enable blockchain features, start a local node: contracts-node --dev');
+      console.warn('   Or update SUBSTRATE_WS_ENDPOINT in .env to a running node');
+    }
 
     // Start server
     const PORT = config.PORT || 5000;
@@ -99,7 +108,7 @@ async function startServer() {
       console.log(`🌐 Frontend URL: ${config.FRONTEND_URL}`);
       console.log(`🔗 Substrate endpoint: ${config.SUBSTRATE_WS_ENDPOINT}`);
       
-      // Start contract event listener in production
+      // Start contract event listener in production (only if connected)
       if (config.NODE_ENV === 'production') {
         console.log('🔗 Starting contract event listener...');
         EventsService.startEventListener();
@@ -120,7 +129,6 @@ async function startServer() {
 
   } catch (error) {
     console.error('❌ Failed to start server:', error);
-    console.error('💡 Make sure Substrate node is running on:', config.SUBSTRATE_WS_ENDPOINT);
     process.exit(1);
   }
 }

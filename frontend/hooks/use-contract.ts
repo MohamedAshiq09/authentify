@@ -24,9 +24,10 @@ export function useContract() {
         setConnected(true);
         setContractAvailable(true);
       } catch (error: any) {
-        console.error('Failed to initialize contract:', error);
+        console.warn('Contract initialization failed (continuing without blockchain features):', error);
         setConnected(false);
         setContractAvailable(false);
+        // Don't throw error, just continue without contract features
       }
     };
 
