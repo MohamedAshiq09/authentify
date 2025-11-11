@@ -1,0 +1,740 @@
+{
+  "metadataVersion": "4",
+  "source": {
+    "hash": "0x0",
+    "language": "ink! 5.0.0",
+    "compiler": "rustc 1.75.0",
+    "build_info": {
+      "build_mode": "Release",
+      "cargo_contract_version": "5.0.0",
+      "rust_toolchain": "stable",
+      "wasm_opt_settings": {
+        "optimization_passes": "Z",
+        "keep_debug_symbols": false
+      }
+    }
+  },
+  "contract": {
+    "name": "authentify-contract",
+    "version": "1.0.0",
+    "authors": ["Your Name <you@example.com>"]
+  },
+  "spec": {
+    "constructors": [
+      {
+        "args": [],
+        "default": false,
+        "docs": ["Create a new Authentify contract instance"],
+        "label": "new",
+        "payable": false,
+        "returnType": {
+          "displayName": ["ink_primitives", "ConstructorResult"],
+          "type": 0
+        },
+        "selector": "0x9bae9d5e"
+      }
+    ],
+    "docs": [],
+    "events": [],
+    "lang_error": {
+      "displayName": ["ink", "LangError"],
+      "type": 1
+    },
+    "messages": [
+      {
+        "args": [
+          {
+            "label": "username",
+            "type": {
+              "displayName": ["String"],
+              "type": 2
+            }
+          },
+          {
+            "label": "password_hash",
+            "type": {
+              "displayName": ["String"],
+              "type": 2
+            }
+          },
+          {
+            "label": "social_id_hash",
+            "type": {
+              "displayName": ["String"],
+              "type": 2
+            }
+          },
+          {
+            "label": "social_provider",
+            "type": {
+              "displayName": ["String"],
+              "type": 2
+            }
+          }
+        ],
+        "default": false,
+        "docs": ["Register a new identity with username and password"],
+        "label": "register_identity",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": ["ink", "MessageResult"],
+          "type": 3
+        },
+        "selector": "0x123456"
+      },
+      {
+        "args": [
+          {
+            "label": "username",
+            "type": {
+              "displayName": ["String"],
+              "type": 2
+            }
+          },
+          {
+            "label": "password_hash",
+            "type": {
+              "displayName": ["String"],
+              "type": 2
+            }
+          }
+        ],
+        "default": false,
+        "docs": ["Authenticate user and return account ID"],
+        "label": "authenticate",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": ["ink", "MessageResult"],
+          "type": 4
+        },
+        "selector": "0x234567"
+      },
+      {
+        "args": [
+          {
+            "label": "account_id",
+            "type": {
+              "displayName": ["String"],
+              "type": 2
+            }
+          },
+          {
+            "label": "session_id",
+            "type": {
+              "displayName": ["String"],
+              "type": 2
+            }
+          },
+          {
+            "label": "duration_ms",
+            "type": {
+              "displayName": ["u64"],
+              "type": 5
+            }
+          }
+        ],
+        "default": false,
+        "docs": ["Create a new session"],
+        "label": "create_session",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": ["ink", "MessageResult"],
+          "type": 6
+        },
+        "selector": "0x345678"
+      },
+      {
+        "args": [
+          {
+            "label": "session_id",
+            "type": {
+              "displayName": ["String"],
+              "type": 2
+            }
+          }
+        ],
+        "default": false,
+        "docs": ["Verify session validity"],
+        "label": "verify_session",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": ["ink", "MessageResult"],
+          "type": 4
+        },
+        "selector": "0x456789"
+      },
+      {
+        "args": [
+          {
+            "label": "session_id",
+            "type": {
+              "displayName": ["String"],
+              "type": 2
+            }
+          }
+        ],
+        "default": false,
+        "docs": ["Revoke a session"],
+        "label": "revoke_session",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": ["ink", "MessageResult"],
+          "type": 3
+        },
+        "selector": "0x567890"
+      },
+      {
+        "args": [
+          {
+            "label": "username",
+            "type": {
+              "displayName": ["String"],
+              "type": 2
+            }
+          }
+        ],
+        "default": false,
+        "docs": ["Check if username is available"],
+        "label": "is_username_available",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": ["ink", "MessageResult"],
+          "type": 7
+        },
+        "selector": "0x678901"
+      },
+      {
+        "args": [
+          {
+            "label": "username",
+            "type": {
+              "displayName": ["String"],
+              "type": 2
+            }
+          }
+        ],
+        "default": false,
+        "docs": ["Get account ID by username"],
+        "label": "get_account_by_username",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": ["ink", "MessageResult"],
+          "type": 4
+        },
+        "selector": "0x789012"
+      }
+    ]
+  },
+  "storage": {
+    "root": {
+      "layout": {
+        "struct": {
+          "fields": [
+            {
+              "layout": {
+                "leaf": {
+                  "key": "0x00000000",
+                  "ty": 0
+                }
+              },
+              "name": "identities"
+            }
+          ],
+          "name": "Authentify"
+        }
+      },
+      "root_key": "0x00000000",
+      "ty": 8
+    }
+  },
+  "types": [
+    {
+      "id": 0,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "type": 1,
+                "typeName": "Result<(), E>"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 9
+          },
+          {
+            "name": "E",
+            "type": 1
+          }
+        ],
+        "path": ["Result"]
+      }
+    },
+    {
+      "id": 1,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 10
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 11
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 10
+          },
+          {
+            "name": "E",
+            "type": 11
+          }
+        ],
+        "path": ["Result"]
+      }
+    },
+    {
+      "id": 2,
+      "type": {
+        "def": {
+          "primitive": "str"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 12
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 1
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 12
+          },
+          {
+            "name": "E",
+            "type": 1
+          }
+        ],
+        "path": ["Result"]
+      }
+    },
+    {
+      "id": 4,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 13
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 1
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 13
+          },
+          {
+            "name": "E",
+            "type": 1
+          }
+        ],
+        "path": ["Result"]
+      }
+    },
+    {
+      "id": 5,
+      "type": {
+        "def": {
+          "primitive": "u64"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 14
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 1
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 14
+          },
+          {
+            "name": "E",
+            "type": 1
+          }
+        ],
+        "path": ["Result"]
+      }
+    },
+    {
+      "id": 7,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 15
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 1
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 15
+          },
+          {
+            "name": "E",
+            "type": 1
+          }
+        ],
+        "path": ["Result"]
+      }
+    },
+    {
+      "id": 8,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "name": "identities",
+                "type": 16,
+                "typeName": "Mapping<String, Identity>"
+              }
+            ]
+          }
+        },
+        "path": ["authentify_contract", "Authentify"]
+      }
+    },
+    {
+      "id": 9,
+      "type": {
+        "def": {
+          "tuple": []
+        }
+      }
+    },
+    {
+      "id": 10,
+      "type": {
+        "def": {
+          "tuple": []
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "index": 1,
+                "name": "CouldNotReadInput"
+              }
+            ]
+          }
+        },
+        "path": ["ink_primitives", "LangError"]
+      }
+    },
+    {
+      "id": 12,
+      "type": {
+        "def": {
+          "primitive": "bool"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 2
+                  }
+                ],
+                "index": 0,
+                "name": "Some"
+              },
+              {
+                "index": 1,
+                "name": "None"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 2
+          }
+        ],
+        "path": ["Option"]
+      }
+    },
+    {
+      "id": 14,
+      "type": {
+        "def": {
+          "primitive": "bool"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "type": {
+        "def": {
+          "primitive": "bool"
+        }
+      }
+    },
+    {
+      "id": 16,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "name": "key",
+                "type": 17,
+                "typeName": "K"
+              },
+              {
+                "name": "value",
+                "type": 18,
+                "typeName": "V"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "K",
+            "type": 2
+          },
+          {
+            "name": "V",
+            "type": 19
+          }
+        ],
+        "path": ["ink_storage", "Mapping"]
+      }
+    },
+    {
+      "id": 17,
+      "type": {
+        "def": {
+          "primitive": "str"
+        }
+      }
+    },
+    {
+      "id": 18,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "name": "account_id",
+                "type": 2,
+                "typeName": "String"
+              },
+              {
+                "name": "username",
+                "type": 2,
+                "typeName": "String"
+              },
+              {
+                "name": "password_hash",
+                "type": 2,
+                "typeName": "String"
+              },
+              {
+                "name": "social_id_hash",
+                "type": 2,
+                "typeName": "String"
+              },
+              {
+                "name": "social_provider",
+                "type": 2,
+                "typeName": "String"
+              },
+              {
+                "name": "created_at",
+                "type": 5,
+                "typeName": "u64"
+              },
+              {
+                "name": "is_verified",
+                "type": 12,
+                "typeName": "bool"
+              }
+            ]
+          }
+        },
+        "path": ["authentify_contract", "Identity"]
+      }
+    },
+    {
+      "id": 19,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "name": "account_id",
+                "type": 2,
+                "typeName": "String"
+              },
+              {
+                "name": "username",
+                "type": 2,
+                "typeName": "String"
+              },
+              {
+                "name": "password_hash",
+                "type": 2,
+                "typeName": "String"
+              },
+              {
+                "name": "social_id_hash",
+                "type": 2,
+                "typeName": "String"
+              },
+              {
+                "name": "social_provider",
+                "type": 2,
+                "typeName": "String"
+              },
+              {
+                "name": "created_at",
+                "type": 5,
+                "typeName": "u64"
+              },
+              {
+                "name": "is_verified",
+                "type": 12,
+                "typeName": "bool"
+              }
+            ]
+          }
+        },
+        "path": ["authentify_contract", "Identity"]
+      }
+    }
+  ],
+  "version": 4
+}
