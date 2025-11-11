@@ -1,13 +1,41 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Code, Book, Download, ExternalLink, Copy, CheckCircle2 } from 'lucide-react';
-import { useState } from 'react';
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Shield,
+  Code,
+  Book,
+  Download,
+  ExternalLink,
+  Copy,
+  CheckCircle2,
+  Menu,
+  X,
+  Zap,
+  Lock,
+  Globe,
+  Wallet,
+  Fingerprint,
+  Github,
+  Package,
+  Terminal,
+} from "lucide-react";
+import { useState, useEffect } from "react";
 
 export default function SDKPage() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<
+    "install" | "quickstart" | "react" | "blockchain"
+  >("install");
 
   const copyToClipboard = (code: string, id: string) => {
     navigator.clipboard.writeText(code);
@@ -16,443 +44,444 @@ export default function SDKPage() {
   };
 
   const installCode = `npm install @authentify/sdk`;
-  
+
   const quickStartCode = `import { AuthentifySDK } from '@authentify/sdk';
 
-const authentify = new AuthentifySDK({
-  clientId: 'your_client_id',
-  clientSecret: 'your_client_secret',
-  apiUrl: 'https://api.authentify.dev'
+const sdk = new AuthentifySDK({
+  apiUrl: 'https://api.authentify.com',
+  apiKey: 'your-api-key'
 });
+
+await sdk.initialize();
 
 // Register user
-const user = await authentify.register({
-  email: 'user@example.com',
-  password: 'securePassword123',
-  walletAddress: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
+const user = await sdk.register({
+  username: 'johndoe',
+  password: 'secure123',
+  email: 'john@example.com'
 });
 
-// Login user
-const session = await authentify.login({
-  email: 'user@example.com',
-  password: 'securePassword123'
-});`;
+// Login
+const session = await sdk.login('johndoe', 'secure123');
+console.log('Session:', session);`;
 
-  const reactCode = `import { useAuthentify } from '@authentify/react';
+  const blockchainCode = `import { AuthentifySDK } from '@authentify/sdk';
 
-function LoginComponent() {
-  const { login, user, isLoading } = useAuthentify();
+const sdk = new AuthentifySDK({
+  apiUrl: 'https://api.authentify.com',
+  apiKey: 'your-api-key',
+  wsUrl: 'ws://localhost:9944',
+  contractAddress: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
+  useContract: true
+});
 
-  const handleLogin = async (email, password) => {
+await sdk.initialize();
+
+// Register on blockchain
+const identity = await sdk.registerOnChain({
+  username: 'blockchaindev',
+  password: 'secure123'
+});
+
+// Authenticate via contract
+const auth = await sdk.authenticateOnChain(
+  'blockchaindev',
+  'secure123'
+);`;
+
+  const reactCode = `import { AuthentifySDK } from '@authentify/sdk';
+import { useState, useEffect } from 'react';
+
+export function LoginForm() {
+  const [sdk] = useState(() => 
+    new AuthentifySDK({
+      apiUrl: 'https://api.authentify.com',
+      apiKey: process.env.NEXT_PUBLIC_API_KEY
+    })
+  );
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => { sdk.initialize(); }, []);
+
+  const handleLogin = async (username, password) => {
+    setIsLoading(true);
     try {
-      await login({ email, password });
-    } catch (error) {
-      console.error('Login failed:', error);
+      await sdk.login(username, password);
+      setUser({ username });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (user) {
-    return <div>Welcome, {user.email}!</div>;
-  }
-
-  return (
-    <form onSubmit={(e) => {
-      e.preventDefault();
-      const formData = new FormData(e.target);
-      handleLogin(
-        formData.get('email'),
-        formData.get('password')
-      );
-    }}>
-      <input name="email" type="email" placeholder="Email" />
-      <input name="password" type="password" placeholder="Password" />
-      <button type="submit" disabled={isLoading}>
-        {isLoading ? 'Logging in...' : 'Login'}
-      </button>
-    </form>
+  return user ? (
+    <p>Welcome, {user.username}! ✓</p>
+  ) : (
+    <button onClick={() => handleLogin('user', 'pass')} 
+            disabled={isLoading}>
+      {isLoading ? 'Logging in...' : 'Login'}
+    </button>
   );
 }`;
 
+  const sections = [
+    { id: "quickstart", label: "Quick Start", icon: Zap },
+    { id: "api", label: "API Reference", icon: Globe },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <header className="bg-white border-b shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-900/20 to-slate-950 text-slate-100">
+      {/* Header - Dark Theme with Pink Accent */}
+      <header className="sticky top-0 z-50 border-b border-slate-800/50 bg-slate-950/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg blur opacity-50"></div>
-                <div className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-pink-600">
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-red-500 rounded-lg blur opacity-75"></div>
+                <div className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-pink-500 to-red-500">
                   <Shield className="h-6 w-6 text-white" />
                 </div>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Authentify SDK</h1>
-                <p className="text-xs text-gray-500">Developer Documentation</p>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-pink-400 to-red-400 bg-clip-text text-transparent">
+                  Authentify SDK
+                </h1>
+                <p className="text-xs text-slate-400">
+                  Developer Documentation
+                </p>
               </div>
             </div>
-            <div className="flex gap-3">
-              <Link href="/dashboard">
-                <Button variant="outline" className="border-2">
-                  Dashboard
-                </Button>
-              </Link>
-              <Link href="/">
-                <Button className="bg-gradient-primary">
-                  Home
-                </Button>
-              </Link>
-            </div>
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="md:hidden p-2 hover:bg-slate-800 rounded transition-colors"
+            >
+              {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-purple-600 via-pink-600 to-indigo-700 text-white py-20">
-        <div className="container mx-auto px-4 text-center">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-lg px-4 py-2 rounded-full mb-6 border border-white/20">
-            <Code className="h-4 w-4" />
-            <span className="text-sm font-medium">Developer SDK</span>
-          </div>
-          
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            Build with Authentify
-          </h1>
-          
-          <p className="text-xl md:text-2xl mb-8 text-purple-100 max-w-3xl mx-auto">
-            Integrate decentralized authentication into your dApp with our powerful SDK. 
-            Get started in minutes with comprehensive documentation and examples.
-          </p>
+      {/* Main Content with Sidebar */}
+      <div className="flex gap-0">
+        {/* Sidebar Navigation - Fixed Professional Style */}
+        <aside
+          className={`fixed md:sticky top-[64px] left-0 h-[calc(100vh-64px)] w-64 overflow-y-auto border-r border-slate-800 bg-slate-950 transition-transform duration-300 z-40 md:translate-x-0 ${
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <nav className="p-4 space-y-1">
+            <div className="px-3 py-2 mb-2">
+              <p className="text-xs uppercase font-semibold text-slate-500 tracking-wider">
+                Documentation
+              </p>
+            </div>
+            {sections.map((section) => {
+              const Icon = section.icon;
+              return (
+                <a
+                  key={section.id}
+                  href={`#${section.id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const element = document.getElementById(section.id);
+                    element?.scrollIntoView({ behavior: "smooth" });
+                    setSidebarOpen(false);
+                  }}
+                  className="w-full text-left flex items-center gap-3 px-3 py-2 rounded text-sm transition-colors text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+                >
+                  <Icon size={16} />
+                  <span>{section.label}</span>
+                </a>
+              );
+            })}
+          </nav>
+        </aside>
 
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 shadow-xl text-lg px-8 py-6">
-              <Download className="mr-2 h-5 w-5" />
-              Get Started
-            </Button>
-            <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10 backdrop-blur-lg text-lg px-8 py-6">
-              <Book className="mr-2 h-5 w-5" />
-              View Examples
-            </Button>
-          </div>
-        </div>
-      </section>
+        {/* Content Area */}
+        <main className="flex-1 px-4 md:px-6 py-6 w-full">
+          {/* Quick Start Section */}
+          <section id="quickstart" className="mb-12 scroll-mt-20">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold mb-2 text-slate-100">
+                Quick Start Guide
+              </h2>
+              <p className="text-sm text-slate-400 max-w-2xl">
+                Get up and running in minutes
+              </p>
+            </div>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-12">
-        {/* Quick Start */}
-        <section className="mb-16">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4 text-gradient">Quick Start</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Get up and running with Authentify in less than 5 minutes
-            </p>
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Installation */}
-            <Card className="shadow-lg border-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Download className="h-5 w-5 text-blue-600" />
-                  Installation
-                </CardTitle>
-                <CardDescription>Install the Authentify SDK via npm</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-gray-900 rounded-lg p-4 relative">
-                  <button
-                    onClick={() => copyToClipboard(installCode, 'install')}
-                    className="absolute top-2 right-2 p-2 hover:bg-gray-700 rounded transition-colors"
-                  >
-                    {copiedCode === 'install' ? (
-                      <CheckCircle2 className="h-4 w-4 text-green-400" />
-                    ) : (
-                      <Copy className="h-4 w-4 text-gray-400" />
-                    )}
-                  </button>
-                  <code className="text-green-400 font-mono text-sm">
-                    {installCode}
-                  </code>
+            {/* Code Tabs */}
+            <Card className="bg-slate-900/50 border-slate-800/50 overflow-hidden">
+              <CardHeader className="pb-0 border-b border-slate-800/50">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-pink-300">
+                    <Terminal className="h-5 w-5 text-pink-500" />
+                    Code Examples
+                  </CardTitle>
+                  <div className="flex gap-2">
+                    {[
+                      { id: "install", label: "Install", icon: Package },
+                      { id: "quickstart", label: "Basic", icon: Zap },
+                      { id: "blockchain", label: "Blockchain", icon: Wallet },
+                      { id: "react", label: "React", icon: Code },
+                    ].map((tab) => {
+                      const TabIcon = tab.icon;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id as any)}
+                          className={`flex items-center gap-1 px-4 py-2 rounded-t-lg border-b-2 transition-all ${
+                            activeTab === tab.id
+                              ? "bg-slate-800/50 border-pink-500 text-pink-300"
+                              : "border-transparent text-slate-400 hover:text-slate-300"
+                          }`}
+                        >
+                          <TabIcon size={16} />
+                          <span className="text-sm font-medium">
+                            {tab.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Basic Usage */}
-            <Card className="shadow-lg border-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Code className="h-5 w-5 text-purple-600" />
-                  Basic Usage
-                </CardTitle>
-                <CardDescription>Initialize and use the SDK</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="bg-gray-900 rounded-lg p-4 relative max-h-64 overflow-y-auto">
+              <CardContent className="p-0">
+                <div className="relative bg-slate-950/50">
                   <button
-                    onClick={() => copyToClipboard(quickStartCode, 'quickstart')}
-                    className="absolute top-2 right-2 p-2 hover:bg-gray-700 rounded transition-colors"
+                    onClick={() => {
+                      const codeMap: Record<string, string> = {
+                        install: installCode,
+                        quickstart: quickStartCode,
+                        blockchain: blockchainCode,
+                        react: reactCode,
+                      };
+                      copyToClipboard(codeMap[activeTab], activeTab);
+                    }}
+                    className="absolute top-3 right-3 p-2 hover:bg-slate-700 rounded transition-colors z-10"
                   >
-                    {copiedCode === 'quickstart' ? (
-                      <CheckCircle2 className="h-4 w-4 text-green-400" />
+                    {copiedCode === activeTab ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                     ) : (
-                      <Copy className="h-4 w-4 text-gray-400" />
+                      <Copy className="h-4 w-4 text-slate-400 hover:text-slate-200" />
                     )}
                   </button>
-                  <pre className="text-sm">
-                    <code className="text-gray-300">
-                      {quickStartCode}
+                  <pre className="p-6 overflow-x-auto">
+                    <code className="text-sm text-slate-300 font-mono">
+                      {activeTab === "install" && installCode}
+                      {activeTab === "quickstart" && quickStartCode}
+                      {activeTab === "blockchain" && blockchainCode}
+                      {activeTab === "react" && reactCode}
                     </code>
                   </pre>
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </section>
+          </section>
 
-        {/* Features */}
-        <section className="mb-16">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4 text-gradient">SDK Features</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Everything you need to build secure authentication
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="card-hover border-2 border-transparent hover:border-blue-200">
-              <CardHeader>
-                <div className="mb-4 p-3 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg w-fit">
-                  <Shield className="h-8 w-8 text-blue-600" />
-                </div>
-                <CardTitle className="text-xl">Secure Authentication</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-base">
-                  Client-side password hashing, JWT tokens, and secure session management out of the box.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="card-hover border-2 border-transparent hover:border-purple-200">
-              <CardHeader>
-                <div className="mb-4 p-3 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg w-fit">
-                  <Code className="h-8 w-8 text-purple-600" />
-                </div>
-                <CardTitle className="text-xl">TypeScript Support</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-base">
-                  Full TypeScript support with comprehensive type definitions and IntelliSense.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="card-hover border-2 border-transparent hover:border-green-200">
-              <CardHeader>
-                <div className="mb-4 p-3 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg w-fit">
-                  <ExternalLink className="h-8 w-8 text-green-600" />
-                </div>
-                <CardTitle className="text-xl">Blockchain Integration</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-base">
-                  Seamless Polkadot wallet integration and smart contract interaction.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="card-hover border-2 border-transparent hover:border-yellow-200">
-              <CardHeader>
-                <div className="mb-4 p-3 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-lg w-fit">
-                  <Book className="h-8 w-8 text-orange-600" />
-                </div>
-                <CardTitle className="text-xl">React Hooks</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-base">
-                  Ready-to-use React hooks for authentication state management.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="card-hover border-2 border-transparent hover:border-red-200">
-              <CardHeader>
-                <div className="mb-4 p-3 bg-gradient-to-br from-red-100 to-pink-100 rounded-lg w-fit">
-                  <Download className="h-8 w-8 text-red-600" />
-                </div>
-                <CardTitle className="text-xl">OAuth Support</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-base">
-                  Built-in support for Google, GitHub, and Twitter OAuth providers.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="card-hover border-2 border-transparent hover:border-indigo-200">
-              <CardHeader>
-                <div className="mb-4 p-3 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg w-fit">
-                  <Shield className="h-8 w-8 text-indigo-600" />
-                </div>
-                <CardTitle className="text-xl">Rate Limiting</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-base">
-                  Built-in rate limiting and error handling for production applications.
-                </CardDescription>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        {/* React Example */}
-        <section className="mb-16">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4 text-gradient">React Integration</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Use our React hooks for seamless integration
-            </p>
-          </div>
-
-          <Card className="shadow-lg border-2 max-w-4xl mx-auto">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Code className="h-5 w-5 text-blue-600" />
-                React Hook Example
-              </CardTitle>
-              <CardDescription>Complete login component with error handling</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-gray-900 rounded-lg p-4 relative">
-                <button
-                  onClick={() => copyToClipboard(reactCode, 'react')}
-                  className="absolute top-2 right-2 p-2 hover:bg-gray-700 rounded transition-colors"
-                >
-                  {copiedCode === 'react' ? (
-                    <CheckCircle2 className="h-4 w-4 text-green-400" />
-                  ) : (
-                    <Copy className="h-4 w-4 text-gray-400" />
-                  )}
-                </button>
-                <pre className="text-sm overflow-x-auto">
-                  <code className="text-gray-300">
-                    {reactCode}
-                  </code>
-                </pre>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* API Reference */}
-        <section className="mb-16">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4 text-gradient">API Reference</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Complete API documentation and examples
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            <Card className="shadow-lg border-2">
-              <CardHeader>
-                <CardTitle>Authentication Methods</CardTitle>
-                <CardDescription>Core authentication functionality</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="border-l-4 border-blue-500 pl-4">
-                  <h4 className="font-semibold text-gray-900">register(data)</h4>
-                  <p className="text-sm text-gray-600">Register a new user with email and password</p>
-                </div>
-                <div className="border-l-4 border-green-500 pl-4">
-                  <h4 className="font-semibold text-gray-900">login(credentials)</h4>
-                  <p className="text-sm text-gray-600">Authenticate user and return session tokens</p>
-                </div>
-                <div className="border-l-4 border-red-500 pl-4">
-                  <h4 className="font-semibold text-gray-900">logout()</h4>
-                  <p className="text-sm text-gray-600">End user session and clear tokens</p>
-                </div>
-                <div className="border-l-4 border-purple-500 pl-4">
-                  <h4 className="font-semibold text-gray-900">refreshToken()</h4>
-                  <p className="text-sm text-gray-600">Refresh expired access tokens</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-lg border-2">
-              <CardHeader>
-                <CardTitle>Wallet Integration</CardTitle>
-                <CardDescription>Polkadot wallet functionality</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="border-l-4 border-blue-500 pl-4">
-                  <h4 className="font-semibold text-gray-900">connectWallet()</h4>
-                  <p className="text-sm text-gray-600">Connect to Polkadot.js extension</p>
-                </div>
-                <div className="border-l-4 border-green-500 pl-4">
-                  <h4 className="font-semibold text-gray-900">getAccounts()</h4>
-                  <p className="text-sm text-gray-600">Retrieve available wallet accounts</p>
-                </div>
-                <div className="border-l-4 border-yellow-500 pl-4">
-                  <h4 className="font-semibold text-gray-900">signMessage(message)</h4>
-                  <p className="text-sm text-gray-600">Sign messages with wallet</p>
-                </div>
-                <div className="border-l-4 border-purple-500 pl-4">
-                  <h4 className="font-semibold text-gray-900">getBalance(address)</h4>
-                  <p className="text-sm text-gray-600">Get account balance</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        {/* Get Started CTA */}
-        <section className="text-center">
-          <Card className="bg-gradient-primary text-white border-0 shadow-2xl overflow-hidden relative max-w-4xl mx-auto">
-            <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-0 left-0 -mb-12 -ml-12 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-            <CardContent className="p-12 relative z-10">
-              <Code className="h-16 w-16 mx-auto mb-6 text-yellow-300" />
-              <h2 className="text-4xl font-bold mb-4">Ready to Build?</h2>
-              <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-                Join developers building the future of decentralized authentication. 
-                Get your API keys and start integrating today.
+          {/* API Reference Section */}
+          <section id="api" className="mb-12 scroll-mt-20">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold mb-2 text-slate-100">
+                API Reference
+              </h2>
+              <p className="text-sm text-slate-400">
+                All SDK methods and functions
               </p>
-              <div className="flex flex-wrap gap-4 justify-center">
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Authentication Methods Card */}
+              <Card className="bg-slate-900/50 border-slate-800/50">
+                <CardHeader>
+                  <CardTitle className="text-lg text-slate-100">
+                    Authentication Methods
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {[
+                    {
+                      name: "initialize()",
+                      desc: "Initialize SDK connection",
+                    },
+                    {
+                      name: "register(data)",
+                      desc: "Register a new user",
+                    },
+                    {
+                      name: "login(username, password)",
+                      desc: "Authenticate user",
+                    },
+                    {
+                      name: "logout()",
+                      desc: "End user session",
+                    },
+                    {
+                      name: "isLoggedIn()",
+                      desc: "Check auth status",
+                    },
+                    {
+                      name: "getCurrentUser()",
+                      desc: "Get user profile",
+                    },
+                  ].map((method, i) => (
+                    <div key={i} className="border-l-2 border-pink-500/50 pl-3">
+                      <h4 className="text-sm font-semibold text-slate-200">
+                        {method.name}
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        {method.desc}
+                      </p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Blockchain Methods Card */}
+              <Card className="bg-slate-900/50 border-slate-800/50">
+                <CardHeader>
+                  <CardTitle className="text-lg text-slate-100">
+                    Blockchain Integration
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {[
+                    {
+                      name: "registerOnChain(data)",
+                      desc: "Register on blockchain",
+                    },
+                    {
+                      name: "authenticateOnChain(username, password)",
+                      desc: "Authenticate via contract",
+                    },
+                    {
+                      name: "createSession(accountId, duration)",
+                      desc: "Create on-chain session",
+                    },
+                    {
+                      name: "verifySession(sessionId)",
+                      desc: "Verify session",
+                    },
+                    {
+                      name: "isUsernameAvailable(username)",
+                      desc: "Check username",
+                    },
+                    {
+                      name: "changePassword(old, new)",
+                      desc: "Change password",
+                    },
+                  ].map((method, i) => (
+                    <div
+                      key={i}
+                      className="border-l-2 border-emerald-500/50 pl-3"
+                    >
+                      <h4 className="text-sm font-semibold text-slate-200">
+                        {method.name}
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        {method.desc}
+                      </p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+          {/* CTA Section */}
+          <section className="mb-12 pt-6 border-t border-slate-800">
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-100 mb-2">
+                  Ready to get started?
+                </h3>
+                <p className="text-sm text-slate-400">
+                  Start building with Authentify SDK
+                </p>
+              </div>
+              <div className="flex gap-3">
                 <Link href="/register">
-                  <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 shadow-xl text-lg px-8 py-6">
+                  <Button className="bg-pink-500 hover:bg-pink-600 text-white">
                     Get API Keys
                   </Button>
                 </Link>
-                <a href="https://github.com/yourusername/authentify" target="_blank" rel="noopener noreferrer">
-                  <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10 backdrop-blur-lg text-lg px-8 py-6">
-                    View on GitHub
-                    <ExternalLink className="ml-2 h-5 w-5" />
+                <a
+                  href="https://github.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="outline" className="border-slate-700">
+                    <Github className="h-4 w-4 mr-2" />
+                    GitHub
                   </Button>
                 </a>
               </div>
-            </CardContent>
-          </Card>
-        </section>
-      </main>
+            </div>
+          </section>
+        </main>
+      </div>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-12 mt-16">
+      {/* Footer - Dark Theme */}
+      <footer className="border-t border-slate-800 bg-slate-950 py-8 mt-12">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center gap-2 mb-4 md:mb-0">
-              <Shield className="h-6 w-6 text-purple-400" />
-              <span className="text-white font-bold">Authentify SDK</span>
+          <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Shield className="h-5 w-5 text-pink-500" />
+                <span className="font-bold text-slate-100">Authentify SDK</span>
+              </div>
+              <p className="text-slate-500 text-sm">
+                Decentralized authentication for Web3
+              </p>
             </div>
-            <div className="flex gap-6 mb-4 md:mb-0">
-              <a href="https://github.com" className="hover:text-white transition-colors">GitHub</a>
-              <a href="https://docs.example.com" className="hover:text-white transition-colors">API Docs</a>
-              <a href="https://discord.gg" className="hover:text-white transition-colors">Discord</a>
+            <div className="flex gap-8">
+              <div>
+                <h4 className="font-semibold text-slate-100 text-sm mb-3">
+                  Resources
+                </h4>
+                <ul className="space-y-1 text-slate-400 text-xs">
+                  <li>
+                    <a href="#" className="hover:text-pink-400">
+                      Documentation
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-pink-400">
+                      API Reference
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-pink-400">
+                      Examples
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold text-slate-100 text-sm mb-3">
+                  Community
+                </h4>
+                <ul className="space-y-1 text-slate-400 text-xs">
+                  <li>
+                    <a href="#" className="hover:text-pink-400">
+                      GitHub
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-pink-400">
+                      Discord
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-pink-400">
+                      Twitter
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
-            <div className="text-center md:text-right">
-              <p>&copy; 2024 Authentify. Built for developers.</p>
-              <p className="text-sm mt-1">MIT License • Open Source</p>
-            </div>
+          </div>
+          <div className="border-t border-slate-800 pt-6 text-center text-slate-500 text-xs">
+            <p>&copy; 2024 Authentify. MIT License • Open Source</p>
           </div>
         </div>
       </footer>
