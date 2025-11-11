@@ -2,14 +2,11 @@ import {
   AuthentifyConfig,
   IdentityInfo,
   AuthSession,
-  ContractResult,
 } from "./types";
-import { CONTRACT_METHODS, DEFAULT_CONFIG } from "./constants";
 import { AuthentifyError, parseErrorMessage } from "./utils";
 
 export class ContractClient {
   private config: AuthentifyConfig;
-  private web3: any = null;
   private contract: any = null;
   private account: string | null = null;
 
@@ -21,33 +18,7 @@ export class ContractClient {
       );
     }
     this.config = config;
-    this.initializeWeb3();
-  }
-
-  private initializeWeb3(): void {
-    try {
-      // Initialize Web3 connection
-      if (typeof window !== "undefined" && (window as any).ethereum) {
-        // Browser environment with Web3 provider
-        const Web3 = require("web3");
-        this.web3 = new Web3((window as any).ethereum);
-      } else if (this.config.wsUrl) {
-        // Server-side or explicit WebSocket connection
-        const Web3 = require("web3");
-        this.web3 = new Web3(new Web3.providers.WebsocketProvider(this.config.wsUrl));
-      } else {
-        throw new AuthentifyError(
-          "Web3 provider not available",
-          "WEB3_NOT_AVAILABLE"
-        );
-      }
-    } catch (error) {
-      throw new AuthentifyError(
-        "Failed to initialize Web3: " + parseErrorMessage(error),
-        "WEB3_INIT_FAILED",
-        error
-      );
-    }
+    // Web3 initialization would happen on connectWallet or similar
   }
 
   /**

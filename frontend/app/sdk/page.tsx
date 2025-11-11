@@ -43,9 +43,9 @@ export default function SDKPage() {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const installCode = `npm install @authentify/sdk`;
+  const installCode = `npm install authentify-sdk`;
 
-  const quickStartCode = `import { AuthentifySDK } from '@authentify/sdk';
+  const quickStartCode = `import { AuthentifySDK } from 'authentify-sdk';
 
 const sdk = new AuthentifySDK({
   apiUrl: 'https://api.authentify.com',
@@ -65,7 +65,7 @@ const user = await sdk.register({
 const session = await sdk.login('johndoe', 'secure123');
 console.log('Session:', session);`;
 
-  const blockchainCode = `import { AuthentifySDK } from '@authentify/sdk';
+  const blockchainCode = `import { AuthentifySDK } from 'authentify-sdk';
 
 const sdk = new AuthentifySDK({
   apiUrl: 'https://api.authentify.com',
@@ -89,7 +89,7 @@ const auth = await sdk.authenticateOnChain(
   'secure123'
 );`;
 
-  const reactCode = `import { AuthentifySDK } from '@authentify/sdk';
+  const reactCode = `import { AuthentifySDK } from 'authentify-sdk';
 import { useState, useEffect } from 'react';
 
 export function LoginForm() {
@@ -274,6 +274,60 @@ export function LoginForm() {
                       {activeTab === "react" && reactCode}
                     </code>
                   </pre>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Package Info Card */}
+            <Card className="mt-6 bg-gradient-to-r from-pink-500/10 to-red-500/10 border-pink-500/30">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-pink-300">
+                  <Package className="h-5 w-5" />
+                  npm Package Published
+                </CardTitle>
+                <CardDescription className="text-slate-300">
+                  authentify-sdk is available on npm registry
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="bg-slate-800/50 rounded-lg p-4">
+                    <p className="text-xs text-slate-400 mb-1">Package Name</p>
+                    <p className="font-semibold text-slate-100">authentify-sdk</p>
+                  </div>
+                  <div className="bg-slate-800/50 rounded-lg p-4">
+                    <p className="text-xs text-slate-400 mb-1">Version</p>
+                    <p className="font-semibold text-slate-100">1.0.0</p>
+                  </div>
+                  <div className="bg-slate-800/50 rounded-lg p-4">
+                    <p className="text-xs text-slate-400 mb-1">License</p>
+                    <p className="font-semibold text-slate-100">MIT</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-300">
+                  The Authentify SDK is fully published and production-ready. Install it in your project with <code className="bg-slate-800 px-2 py-1 rounded text-pink-400 text-xs">npm install authentify-sdk</code> and start building Web3 authentication today.
+                </p>
+                <div className="flex gap-3">
+                  <a
+                    href="https://www.npmjs.com/package/authentify-sdk"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button className="bg-pink-500 hover:bg-pink-600 text-white">
+                      <Package className="h-4 w-4 mr-2" />
+                      View on npm
+                    </Button>
+                  </a>
+                  <a
+                    href="https://github.com/MohamedAshiq09/authentify"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="outline" className="border-slate-700">
+                      <Github className="h-4 w-4 mr-2" />
+                      GitHub Repository
+                    </Button>
+                  </a>
                 </div>
               </CardContent>
             </Card>

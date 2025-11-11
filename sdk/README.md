@@ -14,7 +14,7 @@ A comprehensive TypeScript SDK for integrating with the Authentify Web3 authenti
 ## Installation
 
 ```bash
-npm install @authentify/sdk
+npm install authentify-sdk
 ```
 
 ## Quick Start
@@ -22,7 +22,7 @@ npm install @authentify/sdk
 ### Basic Usage
 
 ```typescript
-import { AuthentifySDK } from "@authentify/sdk";
+import { AuthentifySDK } from "authentify-sdk";
 
 const sdk = new AuthentifySDK({
   apiUrl: "https://api.authentify.example.com",
@@ -55,7 +55,7 @@ await sdk.logout();
 ### Advanced Usage with Contract Integration
 
 ```typescript
-import { AuthentifySDK, ContractClient } from "@authentify/sdk";
+import { AuthentifySDK, ContractClient } from "authentify-sdk";
 
 const sdk = new AuthentifySDK({
   apiUrl: "https://api.authentify.example.com",
@@ -191,7 +191,7 @@ interface AuthSession {
 The SDK uses custom error types for better error handling:
 
 ```typescript
-import { AuthentifyError } from "@authentify/sdk";
+import { AuthentifyError } from "authentify-sdk";
 
 try {
   await sdk.login("username", "password");
@@ -207,7 +207,7 @@ try {
 ## React Integration (Coming Soon)
 
 ```typescript
-import { useAuthentify } from "@authentify/sdk/react";
+import { useAuthentify } from "authentify-sdk/react";
 
 function App() {
   const { user, login, logout, isLoading, error } = useAuthentify();
