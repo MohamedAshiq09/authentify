@@ -12,6 +12,44 @@ router.post('/register', authLimiter, validateRegister, AuthController.register)
 router.post('/login', authLimiter, validateLogin, AuthController.login);
 router.post('/oauth/callback', authLimiter, AuthController.oauthCallback);
 
+// Contract-based authentication routes
+router.post('/contract/login',
+  authLimiter,
+  [
+    body('username')
+      .isLength({ min: 3, max: 32 })
+      .withMessage('Username must be 3-32 characters')
+      .matches(/^[a-zA-Z0-9_]+$/)
+      .withMessage('Username can only contain letters, numbers, and underscores'),
+    body('password').notEmpty().withMessage('Password is required'),
+    handleValidationErrors,
+  ],
+  AuthController.contractLogin
+);
+
+router.post('/contract/register',
+  authLimiter,
+  [
+    body('username')
+      .isLength({ min: 3, max: 32 })
+      .withMessage('Username must be 3-32 characters')
+      .matches(/^[a-zA-Z0-9_]+$/)
+      .withMessage('Username can only contain letters, numbers, and underscores'),
+    body('password')
+      .isLength({ min: 8 })
+      .withMessage('Password must be at least 8 characters')
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+      .withMessage('Password must contain uppercase, lowercase, and number'),
+    body('walletAddress')
+      .matches(/^[1-9A-HJ-NP-Za-km-z]{47,48}$/)
+      .withMessage('Invalid Substrate address'),
+    body('socialIdHash').notEmpty().withMessage('Social ID hash is required'),
+    body('socialProvider').notEmpty().withMessage('Social provider is required'),
+    handleValidationErrors,
+  ],
+  AuthController.contractRegister
+);
+
 // Password reset routes
 router.post('/password/request-reset', 
   passwordResetLimiter,

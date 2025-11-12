@@ -177,4 +177,48 @@ export class AuthController {
             return ResponseUtil.error(res, error.message);
         }
     }
+
+    /**
+     * Contract-based login (username + password)
+     */
+    static async contractLogin(req: Request, res: Response) {
+        try {
+            const { username, password } = req.body;
+
+            if (!username || !password) {
+                return ResponseUtil.error(res, 'Username and password are required');
+            }
+
+            const result = await AuthService.authenticateWithContract(username, password);
+
+            return ResponseUtil.success(res, result, 'Login successful');
+        } catch (error: any) {
+            return ResponseUtil.error(res, error.message);
+        }
+    }
+
+    /**
+     * Contract-based registration
+     */
+    static async contractRegister(req: Request, res: Response) {
+        try {
+            const { username, password, walletAddress, socialIdHash, socialProvider } = req.body;
+
+            if (!username || !password || !walletAddress || !socialIdHash || !socialProvider) {
+                return ResponseUtil.error(res, 'All fields are required');
+            }
+
+            const result = await AuthService.registerWithContract({
+                username,
+                password,
+                walletAddress,
+                socialIdHash,
+                socialProvider,
+            });
+
+            return ResponseUtil.success(res, result, 'Registration successful', 201);
+        } catch (error: any) {
+            return ResponseUtil.error(res, error.message);
+        }
+    }
 }
