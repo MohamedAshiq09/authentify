@@ -1,132 +1,1480 @@
 {
   "source": {
-    "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-    "language": "ink! 4.0.0",
-    "compiler": "rustc 1.70.0"
+    "hash": "0x1f874b3c82f6d6daee0f5a078a024dd6afed896d8883699cd63886957ac2c574",
+    "language": "ink! 5.1.1",
+    "compiler": "rustc 1.91.0",
+    "build_info": {
+      "build_mode": "Release",
+      "cargo_contract_version": "5.0.3",
+      "rust_toolchain": "stable-x86_64-unknown-linux-gnu",
+      "wasm_opt_settings": {
+        "keep_debug_symbols": false,
+        "optimization_passes": "Z"
+      }
+    }
   },
   "contract": {
-    "name": "authentify_contract",
-    "version": "0.1.0",
-    "authors": ["Authentify Team"]
+    "name": "authentify-contract",
+    "version": "1.0.0",
+    "authors": [
+      "Your Name <you@example.com>"
+    ],
+    "description": "Authentify - Web3 Authentication Layer for Polkadot",
+    "repository": "https://github.com/yourusername/authentify",
+    "license": "MIT"
   },
+  "image": null,
   "spec": {
-    "constructors": [],
+    "constructors": [
+      {
+        "args": [],
+        "default": false,
+        "docs": [
+          "Constructor - initializes the contract with default settings"
+        ],
+        "label": "new",
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink_primitives",
+            "ConstructorResult"
+          ],
+          "type": 27
+        },
+        "selector": "0x9bae9d5e"
+      },
+      {
+        "args": [
+          {
+            "label": "max_failed_attempts",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 6
+            }
+          },
+          {
+            "label": "lockout_duration",
+            "type": {
+              "displayName": [
+                "u64"
+              ],
+              "type": 5
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          "Alternative constructor with custom settings"
+        ],
+        "label": "new_with_config",
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink_primitives",
+            "ConstructorResult"
+          ],
+          "type": 27
+        },
+        "selector": "0x7335a10e"
+      }
+    ],
     "docs": [],
-    "events": [],
+    "environment": {
+      "accountId": {
+        "displayName": [
+          "AccountId"
+        ],
+        "type": 1
+      },
+      "balance": {
+        "displayName": [
+          "Balance"
+        ],
+        "type": 44
+      },
+      "blockNumber": {
+        "displayName": [
+          "BlockNumber"
+        ],
+        "type": 6
+      },
+      "chainExtension": {
+        "displayName": [
+          "ChainExtension"
+        ],
+        "type": 46
+      },
+      "hash": {
+        "displayName": [
+          "Hash"
+        ],
+        "type": 45
+      },
+      "maxEventTopics": 4,
+      "staticBufferSize": 16384,
+      "timestamp": {
+        "displayName": [
+          "Timestamp"
+        ],
+        "type": 5
+      }
+    },
+    "events": [
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "username",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "reason",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "timestamp",
+            "type": {
+              "displayName": [
+                "u64"
+              ],
+              "type": 5
+            }
+          }
+        ],
+        "docs": [],
+        "label": "LoginFailed",
+        "module_path": "authentify_contract::authentify",
+        "signature_topic": "0x0bfad8eb7f7218f88a340d8f2da37c3fda23915f74aedce7ecc220ef8692b68f"
+      },
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "account",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 1
+            }
+          },
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "username",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "reason",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "timestamp",
+            "type": {
+              "displayName": [
+                "u64"
+              ],
+              "type": 5
+            }
+          }
+        ],
+        "docs": [],
+        "label": "AccountLocked",
+        "module_path": "authentify_contract::authentify",
+        "signature_topic": "0xfb5d4b5208dd6e60fe8db9cde341df26fdead3f02675f5e69655ff872acd06ad"
+      },
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "account",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 1
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "session_id",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "expires_at",
+            "type": {
+              "displayName": [
+                "u64"
+              ],
+              "type": 5
+            }
+          }
+        ],
+        "docs": [],
+        "label": "SessionCreated",
+        "module_path": "authentify_contract::authentify",
+        "signature_topic": "0xb18798ae393395f2823c27cbaa4a528ad44c9cf416518be1aff5beb40ecdbe8e"
+      },
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "session_id",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "timestamp",
+            "type": {
+              "displayName": [
+                "u64"
+              ],
+              "type": 5
+            }
+          }
+        ],
+        "docs": [],
+        "label": "SessionRevoked",
+        "module_path": "authentify_contract::authentify",
+        "signature_topic": "0x0d048a4af33471279c677dd9eb3e339c5e491abdb73224955b0ff0e121566bc4"
+      },
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "account",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 1
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "timestamp",
+            "type": {
+              "displayName": [
+                "u64"
+              ],
+              "type": 5
+            }
+          }
+        ],
+        "docs": [],
+        "label": "AccountUnlocked",
+        "module_path": "authentify_contract::authentify",
+        "signature_topic": "0xf3ea583ec32e9bab3b819c8d95ccc63b048e0c64e94074bff213893a6c4c96ca"
+      },
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "account",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 1
+            }
+          },
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "username",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "timestamp",
+            "type": {
+              "displayName": [
+                "u64"
+              ],
+              "type": 5
+            }
+          }
+        ],
+        "docs": [],
+        "label": "LoginSuccessful",
+        "module_path": "authentify_contract::authentify",
+        "signature_topic": "0x150f77350e2c40cee63034ca8e4763af8c818c1a34e892e5aa3e6c7c78f40914"
+      },
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "account",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 1
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "timestamp",
+            "type": {
+              "displayName": [
+                "u64"
+              ],
+              "type": 5
+            }
+          }
+        ],
+        "docs": [],
+        "label": "PasswordChanged",
+        "module_path": "authentify_contract::authentify",
+        "signature_topic": "0x42bb9797edbbe5c24ed4ff00b956b1796118ebc2313ad1e2981d9d5e5570cdcd"
+      },
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "account",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 1
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "verified_by",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 1
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "timestamp",
+            "type": {
+              "displayName": [
+                "u64"
+              ],
+              "type": 5
+            }
+          }
+        ],
+        "docs": [],
+        "label": "IdentityVerified",
+        "module_path": "authentify_contract::authentify",
+        "signature_topic": "0xd98bae6cf5495994a25cf5f21dc6237df5e56311b43012fac78b28a33b47289a"
+      },
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "account",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 1
+            }
+          },
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "username",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "social_provider",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "timestamp",
+            "type": {
+              "displayName": [
+                "u64"
+              ],
+              "type": 5
+            }
+          }
+        ],
+        "docs": [
+          "Events emitted by the contract"
+        ],
+        "label": "IdentityRegistered",
+        "module_path": "authentify_contract::authentify",
+        "signature_topic": "0x3515cc35659b6e8ee0bdea16dd64f54c793c4ca4dab81a3a7fcde1f379bcc90c"
+      }
+    ],
+    "lang_error": {
+      "displayName": [
+        "ink",
+        "LangError"
+      ],
+      "type": 28
+    },
     "messages": [
       {
         "args": [
           {
-            "label": "user",
+            "label": "username",
             "type": {
-              "displayName": ["AccountId"],
+              "displayName": [
+                "String"
+              ],
               "type": 0
             }
           },
           {
             "label": "password_hash",
             "type": {
-              "displayName": ["String"],
-              "type": 4
+              "displayName": [
+                "String"
+              ],
+              "type": 0
             }
           },
           {
             "label": "social_id_hash",
             "type": {
-              "displayName": ["String"],
-              "type": 4
+              "displayName": [
+                "String"
+              ],
+              "type": 0
             }
           },
           {
             "label": "social_provider",
             "type": {
-              "displayName": ["String"],
-              "type": 4
+              "displayName": [
+                "String"
+              ],
+              "type": 0
             }
           }
         ],
-        "docs": ["Register a new identity"],
-        "label": "registerIdentity",
+        "default": false,
+        "docs": [
+          " Register a new identity (called during user registration)",
+          " ",
+          " # Arguments",
+          " * `username` - User's chosen username (3-32 chars, alphanumeric + underscore)",
+          " * `password_hash` - Bcrypt hashed password (hashed client-side)",
+          " * `social_id_hash` - Hash of social identifier (e.g., hash of \"google:user@gmail.com\")",
+          " * `social_provider` - Social provider name (google, github, twitter, etc.)",
+          " ",
+          " # Returns",
+          " * `Ok(())` if registration successful",
+          " * `Err(Error)` if validation fails"
+        ],
+        "label": "register_identity",
         "mutates": true,
         "payable": false,
         "returnType": {
-          "displayName": ["Result"],
-          "type": 5
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 29
         },
-        "selector": "0x12345678"
+        "selector": "0x87ebe7fb"
       },
       {
         "args": [
           {
-            "label": "user",
+            "label": "username",
             "type": {
-              "displayName": ["AccountId"],
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          },
+          {
+            "label": "password_hash",
+            "type": {
+              "displayName": [
+                "String"
+              ],
               "type": 0
             }
           }
         ],
-        "docs": ["Check if user has identity"],
-        "label": "hasIdentity",
-        "mutates": false,
+        "default": false,
+        "docs": [
+          " Authenticate a user by username and password hash",
+          " Returns account address if successful",
+          " ",
+          " # Arguments",
+          " * `username` - User's username",
+          " * `password_hash` - Bcrypt hashed password to verify",
+          " ",
+          " # Returns",
+          " * `Ok(AccountId)` if authentication successful",
+          " * `Err(Error)` if authentication fails"
+        ],
+        "label": "authenticate",
+        "mutates": true,
         "payable": false,
         "returnType": {
-          "displayName": ["bool"],
-          "type": 1
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 32
         },
-        "selector": "0x87654321"
+        "selector": "0x8f9f344d"
       },
       {
         "args": [
           {
-            "label": "user",
+            "label": "account",
             "type": {
-              "displayName": ["AccountId"],
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 1
+            }
+          },
+          {
+            "label": "password_hash",
+            "type": {
+              "displayName": [
+                "String"
+              ],
               "type": 0
             }
           }
         ],
-        "docs": ["Get user identity"],
-        "label": "getIdentity",
+        "default": false,
+        "docs": [
+          " Verify password for an account (used by backend for additional checks)"
+        ],
+        "label": "verify_password",
         "mutates": false,
         "payable": false,
         "returnType": {
-          "displayName": ["Option"],
-          "type": 6
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 34
         },
-        "selector": "0x11111111"
+        "selector": "0x9357873e"
+      },
+      {
+        "args": [
+          {
+            "label": "account",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 1
+            }
+          },
+          {
+            "label": "session_id",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          },
+          {
+            "label": "duration_ms",
+            "type": {
+              "displayName": [
+                "u64"
+              ],
+              "type": 5
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Create a new session after successful authentication"
+        ],
+        "label": "create_session",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 29
+        },
+        "selector": "0x452c48c9"
+      },
+      {
+        "args": [
+          {
+            "label": "session_id",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Verify if a session is valid"
+        ],
+        "label": "verify_session",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 32
+        },
+        "selector": "0xf94d240a"
+      },
+      {
+        "args": [
+          {
+            "label": "session_id",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Revoke a session (logout)"
+        ],
+        "label": "revoke_session",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 29
+        },
+        "selector": "0xc292365b"
+      },
+      {
+        "args": [
+          {
+            "label": "old_password_hash",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          },
+          {
+            "label": "new_password_hash",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Change password for an account"
+        ],
+        "label": "change_password",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 29
+        },
+        "selector": "0x0a9254fb"
+      },
+      {
+        "args": [
+          {
+            "label": "account",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 1
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Unlock a locked account (admin only or after timeout)"
+        ],
+        "label": "unlock_account",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 29
+        },
+        "selector": "0x63d8b637"
+      },
+      {
+        "args": [
+          {
+            "label": "account",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 1
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Verify an identity (mark as verified by admin)"
+        ],
+        "label": "verify_identity",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 29
+        },
+        "selector": "0x34d6be7e"
+      },
+      {
+        "args": [
+          {
+            "label": "account",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 1
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Get complete identity information for an account"
+        ],
+        "label": "get_identity",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 36
+        },
+        "selector": "0xd4d3671f"
+      },
+      {
+        "args": [
+          {
+            "label": "username",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Get account address by username"
+        ],
+        "label": "get_account_by_username",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 38
+        },
+        "selector": "0xc482dd2b"
+      },
+      {
+        "args": [
+          {
+            "label": "social_id_hash",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Get account by social ID hash"
+        ],
+        "label": "get_account_by_social",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 38
+        },
+        "selector": "0x14348979"
+      },
+      {
+        "args": [
+          {
+            "label": "username",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Check if username is available"
+        ],
+        "label": "is_username_available",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 40
+        },
+        "selector": "0xc5ad0bbe"
+      },
+      {
+        "args": [
+          {
+            "label": "social_id_hash",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Check if social ID is already bound"
+        ],
+        "label": "is_social_id_available",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 40
+        },
+        "selector": "0x55e5cd33"
+      },
+      {
+        "args": [
+          {
+            "label": "account",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 1
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Check if account has registered identity"
+        ],
+        "label": "has_identity",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 40
+        },
+        "selector": "0x86d1679d"
+      },
+      {
+        "args": [],
+        "default": false,
+        "docs": [
+          " Get total number of registered users"
+        ],
+        "label": "get_total_users",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 41
+        },
+        "selector": "0xb5c81e3e"
+      },
+      {
+        "args": [],
+        "default": false,
+        "docs": [
+          " Get number of active sessions"
+        ],
+        "label": "get_active_sessions",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 41
+        },
+        "selector": "0x67fc330a"
+      },
+      {
+        "args": [],
+        "default": false,
+        "docs": [
+          " Get contract admin address"
+        ],
+        "label": "get_admin",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 42
+        },
+        "selector": "0x57b8a8a7"
+      },
+      {
+        "args": [],
+        "default": false,
+        "docs": [
+          " Get max failed attempts setting"
+        ],
+        "label": "get_max_failed_attempts",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 43
+        },
+        "selector": "0x5c41bd8e"
+      },
+      {
+        "args": [],
+        "default": false,
+        "docs": [
+          " Get lockout duration setting"
+        ],
+        "label": "get_lockout_duration",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 41
+        },
+        "selector": "0xf4bc514b"
+      },
+      {
+        "args": [
+          {
+            "label": "new_admin",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 1
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Transfer admin role to another account"
+        ],
+        "label": "transfer_admin",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 29
+        },
+        "selector": "0xd26c8e14"
+      },
+      {
+        "args": [
+          {
+            "label": "new_max",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 6
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Update max failed attempts setting"
+        ],
+        "label": "update_max_failed_attempts",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 29
+        },
+        "selector": "0x939de311"
+      },
+      {
+        "args": [
+          {
+            "label": "new_duration",
+            "type": {
+              "displayName": [
+                "u64"
+              ],
+              "type": 5
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Update lockout duration setting"
+        ],
+        "label": "update_lockout_duration",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 29
+        },
+        "selector": "0xe0fe9a17"
       }
     ]
+  },
+  "storage": {
+    "root": {
+      "layout": {
+        "struct": {
+          "fields": [
+            {
+              "layout": {
+                "root": {
+                  "layout": {
+                    "struct": {
+                      "fields": [
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x544e4449",
+                              "ty": 0
+                            }
+                          },
+                          "name": "username"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x544e4449",
+                              "ty": 0
+                            }
+                          },
+                          "name": "password_hash"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x544e4449",
+                              "ty": 0
+                            }
+                          },
+                          "name": "social_id_hash"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x544e4449",
+                              "ty": 0
+                            }
+                          },
+                          "name": "social_provider"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x544e4449",
+                              "ty": 1
+                            }
+                          },
+                          "name": "wallet_address"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x544e4449",
+                              "ty": 4
+                            }
+                          },
+                          "name": "is_verified"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x544e4449",
+                              "ty": 5
+                            }
+                          },
+                          "name": "created_at"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x544e4449",
+                              "ty": 5
+                            }
+                          },
+                          "name": "last_login"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x544e4449",
+                              "ty": 6
+                            }
+                          },
+                          "name": "failed_attempts"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x544e4449",
+                              "ty": 4
+                            }
+                          },
+                          "name": "is_locked"
+                        }
+                      ],
+                      "name": "IdentityInfo"
+                    }
+                  },
+                  "root_key": "0x544e4449",
+                  "ty": 7
+                }
+              },
+              "name": "identities"
+            },
+            {
+              "layout": {
+                "root": {
+                  "layout": {
+                    "leaf": {
+                      "key": "0x4d414e55",
+                      "ty": 1
+                    }
+                  },
+                  "root_key": "0x4d414e55",
+                  "ty": 13
+                }
+              },
+              "name": "username_to_account"
+            },
+            {
+              "layout": {
+                "root": {
+                  "layout": {
+                    "leaf": {
+                      "key": "0x49434f53",
+                      "ty": 1
+                    }
+                  },
+                  "root_key": "0x49434f53",
+                  "ty": 17
+                }
+              },
+              "name": "social_to_account"
+            },
+            {
+              "layout": {
+                "root": {
+                  "layout": {
+                    "struct": {
+                      "fields": [
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x53534553",
+                              "ty": 1
+                            }
+                          },
+                          "name": "account"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x53534553",
+                              "ty": 0
+                            }
+                          },
+                          "name": "session_id"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x53534553",
+                              "ty": 5
+                            }
+                          },
+                          "name": "created_at"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x53534553",
+                              "ty": 5
+                            }
+                          },
+                          "name": "expires_at"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x53534553",
+                              "ty": 4
+                            }
+                          },
+                          "name": "is_active"
+                        }
+                      ],
+                      "name": "SessionInfo"
+                    }
+                  },
+                  "root_key": "0x53534553",
+                  "ty": 21
+                }
+              },
+              "name": "sessions"
+            },
+            {
+              "layout": {
+                "leaf": {
+                  "key": "0x00000000",
+                  "ty": 1
+                }
+              },
+              "name": "admin"
+            },
+            {
+              "layout": {
+                "leaf": {
+                  "key": "0x00000000",
+                  "ty": 5
+                }
+              },
+              "name": "total_users"
+            },
+            {
+              "layout": {
+                "leaf": {
+                  "key": "0x00000000",
+                  "ty": 5
+                }
+              },
+              "name": "active_sessions"
+            },
+            {
+              "layout": {
+                "leaf": {
+                  "key": "0x00000000",
+                  "ty": 6
+                }
+              },
+              "name": "max_failed_attempts"
+            },
+            {
+              "layout": {
+                "leaf": {
+                  "key": "0x00000000",
+                  "ty": 5
+                }
+              },
+              "name": "lockout_duration"
+            }
+          ],
+          "name": "Authentify"
+        }
+      },
+      "root_key": "0x00000000",
+      "ty": 26
+    }
   },
   "types": [
     {
       "id": 0,
       "type": {
         "def": {
-          "composite": {
-            "fields": [
-              {
-                "type": 1,
-                "typeName": "[u8; 32]"
-              }
-            ]
-          }
-        },
-        "path": ["ink_primitives", "types", "AccountId"]
+          "primitive": "str"
+        }
       }
     },
     {
       "id": 1,
       "type": {
         "def": {
+          "composite": {
+            "fields": [
+              {
+                "type": 2,
+                "typeName": "[u8; 32]"
+              }
+            ]
+          }
+        },
+        "path": [
+          "ink_primitives",
+          "types",
+          "AccountId"
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "type": {
+        "def": {
           "array": {
             "len": 32,
-            "type": 2
+            "type": 3
           }
         }
       }
     },
     {
-      "id": 2,
+      "id": 3,
       "type": {
         "def": {
           "primitive": "u8"
@@ -137,7 +1485,7 @@
       "id": 4,
       "type": {
         "def": {
-          "primitive": "str"
+          "primitive": "bool"
         }
       }
     },
@@ -145,12 +1493,560 @@
       "id": 5,
       "type": {
         "def": {
+          "primitive": "u64"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": {
+        "def": {
+          "primitive": "u32"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "K",
+            "type": 1
+          },
+          {
+            "name": "V",
+            "type": 8
+          },
+          {
+            "name": "KeyType",
+            "type": 9
+          }
+        ],
+        "path": [
+          "ink_storage",
+          "lazy",
+          "mapping",
+          "Mapping"
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "name": "username",
+                "type": 0,
+                "typeName": "String"
+              },
+              {
+                "name": "password_hash",
+                "type": 0,
+                "typeName": "String"
+              },
+              {
+                "name": "social_id_hash",
+                "type": 0,
+                "typeName": "String"
+              },
+              {
+                "name": "social_provider",
+                "type": 0,
+                "typeName": "String"
+              },
+              {
+                "name": "wallet_address",
+                "type": 1,
+                "typeName": "AccountId"
+              },
+              {
+                "name": "is_verified",
+                "type": 4,
+                "typeName": "bool"
+              },
+              {
+                "name": "created_at",
+                "type": 5,
+                "typeName": "u64"
+              },
+              {
+                "name": "last_login",
+                "type": 5,
+                "typeName": "u64"
+              },
+              {
+                "name": "failed_attempts",
+                "type": 6,
+                "typeName": "u32"
+              },
+              {
+                "name": "is_locked",
+                "type": 4,
+                "typeName": "bool"
+              }
+            ]
+          }
+        },
+        "path": [
+          "authentify_contract",
+          "authentify",
+          "IdentityInfo"
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "L",
+            "type": 10
+          },
+          {
+            "name": "R",
+            "type": 12
+          }
+        ],
+        "path": [
+          "ink_storage_traits",
+          "impls",
+          "ResolverKey"
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "ParentKey",
+            "type": 11
+          }
+        ],
+        "path": [
+          "ink_storage_traits",
+          "impls",
+          "ManualKey"
+        ]
+      }
+    },
+    {
+      "id": 11,
+      "type": {
+        "def": {
+          "tuple": []
+        }
+      }
+    },
+    {
+      "id": 12,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "ParentKey",
+            "type": 11
+          }
+        ],
+        "path": [
+          "ink_storage_traits",
+          "impls",
+          "ManualKey"
+        ]
+      }
+    },
+    {
+      "id": 13,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "K",
+            "type": 0
+          },
+          {
+            "name": "V",
+            "type": 1
+          },
+          {
+            "name": "KeyType",
+            "type": 14
+          }
+        ],
+        "path": [
+          "ink_storage",
+          "lazy",
+          "mapping",
+          "Mapping"
+        ]
+      }
+    },
+    {
+      "id": 14,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "L",
+            "type": 15
+          },
+          {
+            "name": "R",
+            "type": 16
+          }
+        ],
+        "path": [
+          "ink_storage_traits",
+          "impls",
+          "ResolverKey"
+        ]
+      }
+    },
+    {
+      "id": 15,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "ParentKey",
+            "type": 11
+          }
+        ],
+        "path": [
+          "ink_storage_traits",
+          "impls",
+          "ManualKey"
+        ]
+      }
+    },
+    {
+      "id": 16,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "ParentKey",
+            "type": 11
+          }
+        ],
+        "path": [
+          "ink_storage_traits",
+          "impls",
+          "ManualKey"
+        ]
+      }
+    },
+    {
+      "id": 17,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "K",
+            "type": 0
+          },
+          {
+            "name": "V",
+            "type": 1
+          },
+          {
+            "name": "KeyType",
+            "type": 18
+          }
+        ],
+        "path": [
+          "ink_storage",
+          "lazy",
+          "mapping",
+          "Mapping"
+        ]
+      }
+    },
+    {
+      "id": 18,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "L",
+            "type": 19
+          },
+          {
+            "name": "R",
+            "type": 20
+          }
+        ],
+        "path": [
+          "ink_storage_traits",
+          "impls",
+          "ResolverKey"
+        ]
+      }
+    },
+    {
+      "id": 19,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "ParentKey",
+            "type": 11
+          }
+        ],
+        "path": [
+          "ink_storage_traits",
+          "impls",
+          "ManualKey"
+        ]
+      }
+    },
+    {
+      "id": 20,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "ParentKey",
+            "type": 11
+          }
+        ],
+        "path": [
+          "ink_storage_traits",
+          "impls",
+          "ManualKey"
+        ]
+      }
+    },
+    {
+      "id": 21,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "K",
+            "type": 0
+          },
+          {
+            "name": "V",
+            "type": 22
+          },
+          {
+            "name": "KeyType",
+            "type": 23
+          }
+        ],
+        "path": [
+          "ink_storage",
+          "lazy",
+          "mapping",
+          "Mapping"
+        ]
+      }
+    },
+    {
+      "id": 22,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "name": "account",
+                "type": 1,
+                "typeName": "AccountId"
+              },
+              {
+                "name": "session_id",
+                "type": 0,
+                "typeName": "String"
+              },
+              {
+                "name": "created_at",
+                "type": 5,
+                "typeName": "u64"
+              },
+              {
+                "name": "expires_at",
+                "type": 5,
+                "typeName": "u64"
+              },
+              {
+                "name": "is_active",
+                "type": 4,
+                "typeName": "bool"
+              }
+            ]
+          }
+        },
+        "path": [
+          "authentify_contract",
+          "authentify",
+          "SessionInfo"
+        ]
+      }
+    },
+    {
+      "id": 23,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "L",
+            "type": 24
+          },
+          {
+            "name": "R",
+            "type": 25
+          }
+        ],
+        "path": [
+          "ink_storage_traits",
+          "impls",
+          "ResolverKey"
+        ]
+      }
+    },
+    {
+      "id": 24,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "ParentKey",
+            "type": 11
+          }
+        ],
+        "path": [
+          "ink_storage_traits",
+          "impls",
+          "ManualKey"
+        ]
+      }
+    },
+    {
+      "id": 25,
+      "type": {
+        "def": {
+          "composite": {}
+        },
+        "params": [
+          {
+            "name": "ParentKey",
+            "type": 11
+          }
+        ],
+        "path": [
+          "ink_storage_traits",
+          "impls",
+          "ManualKey"
+        ]
+      }
+    },
+    {
+      "id": 26,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "name": "identities",
+                "type": 7,
+                "typeName": "<Mapping<AccountId, IdentityInfo, ManualKey<0x49444E54>> as::ink::\nstorage::traits::AutoStorableHint<::ink::storage::traits::\nManualKey<3308474474u32, ()>,>>::Type"
+              },
+              {
+                "name": "username_to_account",
+                "type": 13,
+                "typeName": "<Mapping<String, AccountId, ManualKey<0x554E414D>> as::ink::storage\n::traits::AutoStorableHint<::ink::storage::traits::ManualKey<\n1319352492u32, ()>,>>::Type"
+              },
+              {
+                "name": "social_to_account",
+                "type": 17,
+                "typeName": "<Mapping<String, AccountId, ManualKey<0x534F4349>> as::ink::storage\n::traits::AutoStorableHint<::ink::storage::traits::ManualKey<\n3732770511u32, ()>,>>::Type"
+              },
+              {
+                "name": "sessions",
+                "type": 21,
+                "typeName": "<Mapping<String, SessionInfo, ManualKey<0x53455353>> as::ink::\nstorage::traits::AutoStorableHint<::ink::storage::traits::\nManualKey<285124137u32, ()>,>>::Type"
+              },
+              {
+                "name": "admin",
+                "type": 1,
+                "typeName": "<AccountId as::ink::storage::traits::AutoStorableHint<::ink::\nstorage::traits::ManualKey<1558601762u32, ()>,>>::Type"
+              },
+              {
+                "name": "total_users",
+                "type": 5,
+                "typeName": "<u64 as::ink::storage::traits::AutoStorableHint<::ink::storage\n::traits::ManualKey<270682706u32, ()>,>>::Type"
+              },
+              {
+                "name": "active_sessions",
+                "type": 5,
+                "typeName": "<u64 as::ink::storage::traits::AutoStorableHint<::ink::storage\n::traits::ManualKey<4054343282u32, ()>,>>::Type"
+              },
+              {
+                "name": "max_failed_attempts",
+                "type": 6,
+                "typeName": "<u32 as::ink::storage::traits::AutoStorableHint<::ink::storage\n::traits::ManualKey<2209502333u32, ()>,>>::Type"
+              },
+              {
+                "name": "lockout_duration",
+                "type": 5,
+                "typeName": "<u64 as::ink::storage::traits::AutoStorableHint<::ink::storage\n::traits::ManualKey<614516192u32, ()>,>>::Type"
+              }
+            ]
+          }
+        },
+        "path": [
+          "authentify_contract",
+          "authentify",
+          "Authentify"
+        ]
+      }
+    },
+    {
+      "id": 27,
+      "type": {
+        "def": {
           "variant": {
             "variants": [
               {
                 "fields": [
                   {
-                    "type": 3
+                    "type": 11
                   }
                 ],
                 "index": 0,
@@ -159,7 +2055,7 @@
               {
                 "fields": [
                   {
-                    "type": 4
+                    "type": 28
                   }
                 ],
                 "index": 1,
@@ -168,11 +2064,416 @@
             ]
           }
         },
-        "path": ["Result"]
+        "params": [
+          {
+            "name": "T",
+            "type": 11
+          },
+          {
+            "name": "E",
+            "type": 28
+          }
+        ],
+        "path": [
+          "Result"
+        ]
       }
     },
     {
-      "id": 6,
+      "id": 28,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "index": 1,
+                "name": "CouldNotReadInput"
+              }
+            ]
+          }
+        },
+        "path": [
+          "ink_primitives",
+          "LangError"
+        ]
+      }
+    },
+    {
+      "id": 29,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 30
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 28
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 30
+          },
+          {
+            "name": "E",
+            "type": 28
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 30,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 11
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 31
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 11
+          },
+          {
+            "name": "E",
+            "type": 31
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 31,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "index": 0,
+                "name": "IdentityAlreadyExists"
+              },
+              {
+                "index": 1,
+                "name": "UsernameAlreadyTaken"
+              },
+              {
+                "index": 2,
+                "name": "SocialIdAlreadyBound"
+              },
+              {
+                "index": 3,
+                "name": "IdentityNotFound"
+              },
+              {
+                "index": 4,
+                "name": "InvalidCredentials"
+              },
+              {
+                "index": 5,
+                "name": "Unauthorized"
+              },
+              {
+                "index": 6,
+                "name": "EmptyUsername"
+              },
+              {
+                "index": 7,
+                "name": "EmptyPasswordHash"
+              },
+              {
+                "index": 8,
+                "name": "EmptySocialIdHash"
+              },
+              {
+                "index": 9,
+                "name": "UsernameTooShort"
+              },
+              {
+                "index": 10,
+                "name": "UsernameTooLong"
+              },
+              {
+                "index": 11,
+                "name": "InvalidUsernameFormat"
+              },
+              {
+                "index": 12,
+                "name": "AccountLocked"
+              },
+              {
+                "index": 13,
+                "name": "SessionNotFound"
+              },
+              {
+                "index": 14,
+                "name": "SessionExpired"
+              },
+              {
+                "index": 15,
+                "name": "SessionAlreadyRevoked"
+              }
+            ]
+          }
+        },
+        "path": [
+          "authentify_contract",
+          "authentify",
+          "Error"
+        ]
+      }
+    },
+    {
+      "id": 32,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 33
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 28
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 33
+          },
+          {
+            "name": "E",
+            "type": 28
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 33,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 1
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 31
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 1
+          },
+          {
+            "name": "E",
+            "type": 31
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 34,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 35
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 28
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 35
+          },
+          {
+            "name": "E",
+            "type": 28
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 35,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 4
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 31
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 4
+          },
+          {
+            "name": "E",
+            "type": 31
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 36,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 37
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 28
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 37
+          },
+          {
+            "name": "E",
+            "type": 28
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 37,
       "type": {
         "def": {
           "variant": {
@@ -184,7 +2485,7 @@
               {
                 "fields": [
                   {
-                    "type": 7
+                    "type": 8
                   }
                 ],
                 "index": 1,
@@ -193,9 +2494,301 @@
             ]
           }
         },
-        "path": ["Option"]
+        "params": [
+          {
+            "name": "T",
+            "type": 8
+          }
+        ],
+        "path": [
+          "Option"
+        ]
+      }
+    },
+    {
+      "id": 38,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 39
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 28
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 39
+          },
+          {
+            "name": "E",
+            "type": 28
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 39,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "index": 0,
+                "name": "None"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 1
+                  }
+                ],
+                "index": 1,
+                "name": "Some"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 1
+          }
+        ],
+        "path": [
+          "Option"
+        ]
+      }
+    },
+    {
+      "id": 40,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 4
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 28
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 4
+          },
+          {
+            "name": "E",
+            "type": 28
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 41,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 5
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 28
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 5
+          },
+          {
+            "name": "E",
+            "type": 28
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 42,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 1
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 28
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 1
+          },
+          {
+            "name": "E",
+            "type": 28
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 43,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 6
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 28
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 6
+          },
+          {
+            "name": "E",
+            "type": 28
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 44,
+      "type": {
+        "def": {
+          "primitive": "u128"
+        }
+      }
+    },
+    {
+      "id": 45,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "type": 2,
+                "typeName": "[u8; 32]"
+              }
+            ]
+          }
+        },
+        "path": [
+          "ink_primitives",
+          "types",
+          "Hash"
+        ]
+      }
+    },
+    {
+      "id": 46,
+      "type": {
+        "def": {
+          "variant": {}
+        },
+        "path": [
+          "ink_env",
+          "types",
+          "NoChainExtension"
+        ]
       }
     }
   ],
-  "version": "4"
+  "version": 5
 }
