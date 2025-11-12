@@ -20,6 +20,11 @@ export function useContract() {
   useEffect(() => {
     const init = async () => {
       try {
+        // Only try to initialize if we're in browser environment
+        if (typeof window === 'undefined') {
+          return;
+        }
+
         await initContract();
         setConnected(true);
         setContractAvailable(true);

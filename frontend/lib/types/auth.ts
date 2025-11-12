@@ -1,6 +1,7 @@
 export interface User {
   id: string;
   email: string;
+  username?: string;
   wallet_address?: string;
   created_at: string;
   updated_at: string;
@@ -19,6 +20,19 @@ export interface RegisterRequest {
 
 export interface LoginRequest {
   email: string;
+  password: string;
+}
+
+export interface ContractRegisterRequest {
+  username: string;
+  password: string;
+  walletAddress: string;
+  socialIdHash: string;
+  socialProvider: string;
+}
+
+export interface ContractLoginRequest {
+  username: string;
   password: string;
 }
 
