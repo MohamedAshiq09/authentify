@@ -32,7 +32,7 @@ export class ContractService {
       };
 
       // Execute transaction directly (skip dry run for now)
-      const tx = contract.tx.registerIdentity(
+      const tx = contract.tx.register_identity(
         {
           gasLimit: gasLimit as any,
           storageDepositLimit: null,
@@ -92,7 +92,7 @@ export class ContractService {
       const api = getAPI();
 
       // Check if user has identity
-      const { result, output } = await contract.query.hasIdentity(
+      const { result, output } = await contract.query.has_identity(
         serviceAccount.address,
         {
           gasLimit: {
@@ -135,7 +135,7 @@ export class ContractService {
       const serviceAccount = getServiceAccount();
       const api = getAPI();
 
-      const { result, output } = await contract.query.getIdentity(
+      const { result, output } = await contract.query.get_identity(
         serviceAccount.address,
         {
           gasLimit: {
