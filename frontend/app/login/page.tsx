@@ -1,6 +1,13 @@
 'use client';
 
-import { LoginForm } from '@/components/auth/login-form';
+import dynamic from 'next/dynamic';
+import { Spinner } from '@/components/ui/spinner';
+
+// Dynamically import LoginForm to avoid SSR issues
+const LoginForm = dynamic(() => import('@/components/auth/login-form').then(mod => ({ default: mod.LoginForm })), {
+  loading: () => <div className="flex justify-center items-center min-h-screen"><Spinner /></div>,
+  ssr: false
+});
 
 export default function LoginPage() {
   return (
