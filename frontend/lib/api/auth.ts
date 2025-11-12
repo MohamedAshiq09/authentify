@@ -77,4 +77,27 @@ export const authApi = {
   unlinkOAuth: async (provider: string) => {
     return api.delete(`/auth/oauth/${provider}`);
   },
+
+  /**
+   * Contract-based login
+   */
+  contractLogin: async (username: string, password: string) => {
+    return api.post<{ user: User; tokens: TokenPair }>('/auth/contract/login', {
+      username,
+      password,
+    });
+  },
+
+  /**
+   * Contract-based registration
+   */
+  contractRegister: async (data: {
+    username: string;
+    password: string;
+    walletAddress: string;
+    socialIdHash: string;
+    socialProvider: string;
+  }) => {
+    return api.post<{ user: User; tokens: TokenPair; transactionHash?: string }>('/auth/contract/register', data);
+  },
 };

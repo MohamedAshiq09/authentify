@@ -117,7 +117,7 @@ export async function executeContract(
  */
 export async function hasIdentity(address: string): Promise<boolean> {
   try {
-    const result = await queryContract('hasIdentity', address, address);
+    const result = await queryContract('has_identity', address, address);
     return result as boolean;
   } catch (error) {
     console.error('Failed to check identity:', error);
@@ -133,7 +133,7 @@ export async function isUsernameAvailable(
   username: string
 ): Promise<boolean> {
   try {
-    const result = await queryContract('isUsernameAvailable', callerAddress, username);
+    const result = await queryContract('is_username_available', callerAddress, username);
     return result as boolean;
   } catch (error) {
     console.error('Failed to check username availability:', error);
@@ -146,7 +146,7 @@ export async function isUsernameAvailable(
  */
 export async function getIdentity(callerAddress: string, userAddress: string) {
   try {
-    const result = await queryContract('getIdentity', callerAddress, userAddress);
+    const result = await queryContract('get_identity', callerAddress, userAddress);
     return result;
   } catch (error) {
     console.error('Failed to get identity:', error);
