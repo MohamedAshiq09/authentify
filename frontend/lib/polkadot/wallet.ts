@@ -1,4 +1,13 @@
-import { web3Accounts, web3Enable, web3FromAddress } from '@polkadot/extension-dapp';
+// Dynamic import to avoid SSR issues
+let web3Accounts: any, web3Enable: any, web3FromAddress: any;
+
+if (typeof window !== 'undefined') {
+  import('@polkadot/extension-dapp').then((module) => {
+    web3Accounts = module.web3Accounts;
+    web3Enable = module.web3Enable;
+    web3FromAddress = module.web3FromAddress;
+  });
+}
 import { InjectedAccountWithMeta } from '@polkadot/extension-inject/types';
 
 /**
@@ -13,6 +22,18 @@ export function isExtensionAvailable(): boolean {
  */
 export async function enableExtension(): Promise<boolean> {
   try {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    // Dynamically import if not already loaded
+    if (!web3Enable) {
+      const module = await import('@polkadot/extension-dapp');
+      web3Accounts = module.web3Accounts;
+      web3Enable = module.web3Enable;
+      web3FromAddress = module.web3FromAddress;
+    }
+
     const extensions = await web3Enable('Authentify');
     return extensions.length > 0;
   } catch (error) {
@@ -26,6 +47,10 @@ export async function enableExtension(): Promise<boolean> {
  */
 export async function getAccounts(): Promise<InjectedAccountWithMeta[]> {
   try {
+    if (typeof window === 'undefined') {
+      return [];
+    }
+
     const enabled = await enableExtension();
     if (!enabled) {
       throw new Error('Extension not enabled');
@@ -44,6 +69,18 @@ export async function getAccounts(): Promise<InjectedAccountWithMeta[]> {
  */
 export async function getSigner(address: string) {
   try {
+    if (typeof window === 'undefined') {
+      throw new Error('Signer operations are only available in browser environment');
+    }
+
+    // Dynamically import if not already loaded
+    if (!web3FromAddress) {
+      const module = await import('@polkadot/extension-dapp');
+      web3Accounts = module.web3Accounts;
+      web3Enable = module.web3Enable;
+      web3FromAddress = module.web3FromAddress;
+    }
+
     const injector = await web3FromAddress(address);
     return injector.signer;
   } catch (error) {
@@ -71,6 +108,18 @@ export function formatAddress(address: string, length: number = 10): string {
  */
 export async function signMessage(address: string, message: string): Promise<string> {
   try {
+    if (typeof window === 'undefined') {
+      throw new Error('Message signing is only available in browser environment');
+    }
+
+    // Dynamically import if not already loaded
+    if (!web3FromAddress) {
+      const module = await import('@polkadot/extension-dapp');
+      web3Accounts = module.web3Accounts;
+      web3Enable = module.web3Enable;
+      web3FromAddress = module.web3FromAddress;
+    }
+
     const injector = await web3FromAddress(address);
 
     if (!injector.signer.signRaw) {
