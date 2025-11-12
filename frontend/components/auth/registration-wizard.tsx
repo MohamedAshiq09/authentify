@@ -36,7 +36,7 @@ interface RegistrationWizardProps {
 
 export function RegistrationWizard({ onComplete, className }: RegistrationWizardProps) {
   const router = useRouter();
-  const { register, isLoading: authLoading } = useAuth();
+  const { contractRegister, isLoading: authLoading } = useAuth();
   const { selectedAccount, isConnected } = useWallet();
   const { registerUser } = useContract();
 
@@ -46,7 +46,7 @@ export function RegistrationWizard({ onComplete, className }: RegistrationWizard
   const [socialProvider, setSocialProvider] = useState<string | null>(null);
   const [showBiometricSetup, setShowBiometricSetup] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: '',
     confirmPassword: '',
   });
@@ -87,8 +87,13 @@ export function RegistrationWizard({ onComplete, className }: RegistrationWizard
     setError(null);
 
     // Validation
-    if (!isValidEmail(formData.email)) {
-      setError('Please enter a valid email address');
+    if (!formData.username || formData.username.length < 3) {
+      setError('Username must be at least 3 characters');
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+      setError('Username can only contain letters, numbers, and underscores');
       return;
     }
 
@@ -109,24 +114,19 @@ export function RegistrationWizard({ onComplete, className }: RegistrationWizard
     }
 
     try {
-      // Hash password client-side
-      const passwordHash = await hashPassword(formData.password);
+      // Create social ID hash
+      const socialIdHash = socialProvider 
+        ? `${socialProvider}:${formData.username}:${Date.now()}`
+        : `local:${formData.username}:${Date.now()}`;
 
-      // Register on backend
-      await register({
-        email: formData.email,
-        password: passwordHash,
-        wallet_address: selectedAccount.address,
+      // Register using contract-based authentication
+      await contractRegister({
+        username: formData.username,
+        password: formData.password,
+        walletAddress: selectedAccount.address,
+        socialIdHash,
+        socialProvider: socialProvider || 'local',
       });
-
-      // Register on smart contract (optional - only if contract is available)
-      try {
-        await registerUser(selectedAccount.address, socialProvider || 'email');
-        console.log('✅ User registered on smart contract');
-      } catch (contractError: any) {
-        console.warn('⚠️ Smart contract registration failed (continuing without blockchain features):', contractError.message);
-        // Continue without contract registration - this is optional
-      }
 
       setCurrentStep('complete');
     } catch (error: any) {
@@ -283,15 +283,18 @@ export function RegistrationWizard({ onComplete, className }: RegistrationWizard
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Email Address</label>
+              <label className="text-sm font-medium text-gray-700">Username</label>
               <Input
-                type="email"
-                placeholder="your@email.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                type="text"
+                placeholder="your_username"
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 className="h-12 text-base"
                 required
               />
+              <p className="text-xs text-gray-500">
+                3-32 characters, letters, numbers, and underscores only
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -400,8 +403,8 @@ export function RegistrationWizard({ onComplete, className }: RegistrationWizard
             {showBiometricSetup && (
               <div className="border-2 border-dashed border-purple-200 rounded-lg p-4 mt-4">
                 <BiometricAuth
-                  userEmail={formData.email}
-                  userName={formData.email.split('@')[0]}
+                  userEmail={`${formData.username}@authentify.local`}
+                  userName={formData.username}
                   mode="register"
                   showTitle={false}
                   compact={true}

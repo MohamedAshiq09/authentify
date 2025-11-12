@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
@@ -28,10 +28,10 @@ export function LoginForm({
   className 
 }: LoginFormProps) {
   const router = useRouter();
-  const { login, isLoading, error } = useAuth();
+  const { contractLogin, isLoading, error } = useAuth();
   
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -41,10 +41,12 @@ export function LoginForm({
   const validateForm = () => {
     const errors: Record<string, string> = {};
 
-    if (!formData.email) {
-      errors.email = 'Email is required';
-    } else if (!isValidEmail(formData.email)) {
-      errors.email = 'Please enter a valid email address';
+    if (!formData.username) {
+      errors.username = 'Username is required';
+    } else if (formData.username.length < 3) {
+      errors.username = 'Username must be at least 3 characters';
+    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+      errors.username = 'Username can only contain letters, numbers, and underscores';
     }
 
     if (!formData.password) {
@@ -65,19 +67,15 @@ export function LoginForm({
     }
 
     try {
-      // Hash password client-side
-      const passwordHash = await hashPassword(formData.password);
-
-      await login({
-        email: formData.email,
-        password: passwordHash,
-      });
+      await contractLogin(formData.username, formData.password);
 
       // Handle remember me functionality
-      if (rememberMe) {
-        localStorage.setItem('rememberEmail', formData.email);
-      } else {
-        localStorage.removeItem('rememberEmail');
+      if (typeof window !== 'undefined') {
+        if (rememberMe) {
+          localStorage.setItem('rememberUsername', formData.username);
+        } else {
+          localStorage.removeItem('rememberUsername');
+        }
       }
 
       onSuccess?.();
@@ -93,14 +91,16 @@ export function LoginForm({
     alert(`Social authentication with ${provider} will be implemented soon!`);
   };
 
-  // Load remembered email on component mount
-  useState(() => {
-    const rememberedEmail = localStorage.getItem('rememberEmail');
-    if (rememberedEmail) {
-      setFormData(prev => ({ ...prev, email: rememberedEmail }));
-      setRememberMe(true);
+  // Load remembered username on component mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const rememberedUsername = localStorage.getItem('rememberUsername');
+      if (rememberedUsername) {
+        setFormData(prev => ({ ...prev, username: rememberedUsername }));
+        setRememberMe(true);
+      }
     }
-  });
+  }, []);
 
   return (
     <Card className={className}>
@@ -131,20 +131,20 @@ export function LoginForm({
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
               <Mail className="h-4 w-4 text-gray-500" />
-              Email Address
+              Username
             </label>
             <Input
-              type="email"
-              placeholder="your@email.com"
-              value={formData.email}
+              type="text"
+              placeholder="your_username"
+              value={formData.username}
               onChange={(e) => {
-                setFormData({ ...formData, email: e.target.value });
-                if (formErrors.email) {
-                  setFormErrors({ ...formErrors, email: '' });
+                setFormData({ ...formData, username: e.target.value });
+                if (formErrors.username) {
+                  setFormErrors({ ...formErrors, username: '' });
                 }
               }}
               className="h-12 text-base"
-              error={formErrors.email}
+              error={formErrors.username}
               required
             />
           </div>
@@ -228,7 +228,7 @@ export function LoginForm({
         <SocialAuth onSocialAuth={handleSocialAuth} />
 
         {/* Biometric Authentication */}
-        {formData.email && isValidEmail(formData.email) && (
+        {formData.username && formData.username.length >= 3 && (
           <>
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -240,8 +240,8 @@ export function LoginForm({
             </div>
 
             <BiometricAuth
-              userEmail={formData.email}
-              userName={formData.email.split('@')[0]}
+              userEmail={`${formData.username}@authentify.local`}
+              userName={formData.username}
               mode="authenticate"
               showTitle={false}
               compact={true}
