@@ -17,7 +17,6 @@ export class SessionService {
       .insert({
         id: sessionId,
         user_id: userId,
-        session_token: tokens.accessToken,
         refresh_token: tokens.refreshToken,
         expires_at: expiresAt.toISOString(),
       })
@@ -76,11 +75,10 @@ export class SessionService {
 
     const newTokens = JWTUtil.generateTokenPair(tokenPayload);
 
-    // Update session with new tokens
+    // Update session with new refresh token
     const { error } = await supabaseAdmin
       .from('sessions')
       .update({
-        session_token: newTokens.accessToken,
         refresh_token: newTokens.refreshToken,
       })
       .eq('id', session.id);
