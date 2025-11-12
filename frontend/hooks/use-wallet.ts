@@ -23,6 +23,12 @@ export function useWallet() {
   // Check extension availability on mount
   useEffect(() => {
     const checkExtension = () => {
+      // Only check in browser environment
+      if (typeof window === 'undefined') {
+        setExtensionAvailable(false);
+        return;
+      }
+
       const available = isExtensionAvailable();
       setExtensionAvailable(available);
     };
@@ -41,6 +47,11 @@ export function useWallet() {
     setError(null);
 
     try {
+      // Check if we're in browser environment
+      if (typeof window === 'undefined') {
+        throw new Error('Wallet connection is only available in browser environment');
+      }
+
       if (!extensionAvailable) {
         throw new Error('Polkadot.js extension not found. Please install it first.');
       }
@@ -77,7 +88,7 @@ export function useWallet() {
 
   // Refresh accounts
   const refreshAccounts = useCallback(async () => {
-    if (!extensionAvailable) return;
+    if (typeof window === 'undefined' || !extensionAvailable) return;
 
     try {
       const accounts = await getAccounts();

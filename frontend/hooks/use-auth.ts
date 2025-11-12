@@ -118,6 +118,50 @@ export function useAuth() {
     }
   }, [setError, setLoading]);
 
+  // Contract-based login
+  const contractLogin = useCallback(async (username: string, password: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await authApi.contractLogin(username, password);
+      const { user, tokens } = response.data.data!;
+      setAuth(user, tokens);
+      return response;
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || error?.message || 'Login failed';
+      setError(errorMessage);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [setAuth, setError, setLoading]);
+
+  // Contract-based registration
+  const contractRegister = useCallback(async (data: {
+    username: string;
+    password: string;
+    walletAddress: string;
+    socialIdHash: string;
+    socialProvider: string;
+  }) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await authApi.contractRegister(data);
+      const { user, tokens } = response.data.data!;
+      setAuth(user, tokens);
+      return response;
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || error?.message || 'Registration failed';
+      setError(errorMessage);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [setAuth, setError, setLoading]);
+
   return {
     // State
     user,
@@ -133,5 +177,7 @@ export function useAuth() {
     logoutAll,
     refreshProfile,
     updateWallet,
+    contractLogin,
+    contractRegister,
   };
 }
