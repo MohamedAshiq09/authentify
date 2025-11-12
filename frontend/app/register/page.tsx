@@ -1,7 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { RegistrationWizard } from '@/components/auth/registration-wizard';
+import dynamic from 'next/dynamic';
+import { Spinner } from '@/components/ui/spinner';
+
+// Dynamically import RegistrationWizard to avoid SSR issues
+const RegistrationWizard = dynamic(() => import('@/components/auth/registration-wizard').then(mod => ({ default: mod.RegistrationWizard })), {
+  loading: () => <div className="flex justify-center items-center min-h-[400px]"><Spinner /></div>,
+  ssr: false
+});
 
 export default function RegisterPage() {
   return (
