@@ -17,6 +17,7 @@ export class SessionService {
       .insert({
         id: sessionId,
         user_id: userId,
+        session_token: tokens.accessToken,
         refresh_token: tokens.refreshToken,
         expires_at: expiresAt.toISOString(),
       })
