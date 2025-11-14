@@ -25,16 +25,10 @@ export class ContractService {
 
       console.log(`📝 Registering user: ${user_address} with method: ${auth_method}`);
 
-      // Use a reasonable gas limit for the transaction
-      const gasLimit = {
-        refTime: 3000000000,
-        proofSize: 1000000,
-      };
-
       // Execute transaction directly (skip dry run for now)
       const tx = contract.tx.register_identity(
         {
-          gasLimit: gasLimit as any,
+          gasLimit: -1, // Use automatic gas estimation
           storageDepositLimit: null,
         },
         user_address,
@@ -95,10 +89,8 @@ export class ContractService {
       const { result, output } = await contract.query.has_identity(
         serviceAccount.address,
         {
-          gasLimit: {
-            refTime: 1000000000,
-            proofSize: 100000,
-          } as any,
+          gasLimit: -1, // Use automatic gas estimation
+          storageDepositLimit: null,
         },
         user_address
       );
@@ -138,10 +130,8 @@ export class ContractService {
       const { result, output } = await contract.query.get_identity(
         serviceAccount.address,
         {
-          gasLimit: {
-            refTime: 1000000000,
-            proofSize: 100000,
-          } as any,
+          gasLimit: -1, // Use automatic gas estimation
+          storageDepositLimit: null,
         },
         userAddress
       );

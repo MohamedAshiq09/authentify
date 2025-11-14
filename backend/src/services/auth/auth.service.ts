@@ -185,107 +185,53 @@ export class AuthService {
    * Contract-based authentication (username + password)
    */
   static async authenticateWithContract(username: string, password: string): Promise<{ user: User; tokens: TokenPair }> {
-    if (!isContractAvailable()) {
-      console.log('⚠️ Contract not available, using database authentication fallback');
-      return this.authenticateWithDatabase(username, password);
-    }
+    // Try contract authentication first, but fallback to database if it fails
+    if (isContractAvailable()) {
+      try {
+        const contract = getContract();
+        const serviceAccount = getServiceAccount();
 
-    try {
-      const contract = getContract();
-      const serviceAccount = getServiceAccount();
+        // Check if contract methods are available
+        if (contract.query && contract.query.authenticate) {
+          // Hash password for contract verification
+          const passwordHash = await PasswordUtil.hash(password);
 
-      // Hash password for contract verification
-      const passwordHash = await PasswordUtil.hash(password);
+          // Call contract authenticate method
+          const { result, output } = await contract.query.authenticate(
+            serviceAccount.address,
+            {
+              gasLimit: -1, // Use automatic gas estimation
+              storageDepositLimit: null,
+            },
+            username,
+            passwordHash
+          );
 
-      // Call contract authenticate method
-      const { result, output } = await contract.query.authenticate(
-        serviceAccount.address,
-        {
-          gasLimit: {
-            refTime: 2000000000,
-            proofSize: 200000,
-          } as any,
-        },
-        username,
-        passwordHash
-      );
+          if (result.isOk && output) {
+            const accountId = output.toHuman() as string;
 
-      if (result.isOk && output) {
-        const accountId = output.toHuman() as string;
-        
-        // Get or create user in database
-        let { data: user } = await supabaseAdmin
-          .from('users')
-          .select('*')
-          .eq('wallet_address', accountId)
-          .single();
-
-        if (!user) {
-          // Create user record if doesn't exist
-          let insertData: any = {
-            email: `${username}@authentify.local`, // Placeholder email
-            wallet_address: accountId,
-          };
-          
-          // Try to add username if the column exists
-          try {
-            insertData.username = username;
-            const { data: newUser, error } = await supabaseAdmin
+            // Get user from database
+            let { data: user } = await supabaseAdmin
               .from('users')
-              .insert(insertData)
-              .select()
+              .select('*')
+              .eq('wallet_address', accountId)
               .single();
-              
-            if (error) {
-              if (error.message.includes('username')) {
-                // Username column doesn't exist, try without it
-                delete insertData.username;
-                const { data: fallbackUser, error: fallbackError } = await supabaseAdmin
-                  .from('users')
-                  .insert(insertData)
-                  .select()
-                  .single();
-                  
-                if (fallbackError) {
-                  throw new Error(`Failed to create user record: ${fallbackError.message}`);
-                }
-                
-                // Add username to the response object for consistency
-                fallbackUser.username = username;
-                user = fallbackUser;
-              } else {
-                throw new Error(`Failed to create user record: ${error.message}`);
-              }
-            } else {
-              user = newUser;
+
+            if (user) {
+              // Generate tokens
+              const tokens = await JWTUtil.generateTokenPair(user.id);
+              return { user, tokens };
             }
-          } catch (error: any) {
-            throw new Error(`Failed to create user record: ${error.message}`);
           }
         }
-
-        // Generate tokens
-        const tokenPayload = {
-          userId: user.id,
-          email: user.email,
-          walletAddress: user.wallet_address,
-          username: username,
-        };
-
-        const tokens = JWTUtil.generateTokenPair(tokenPayload);
-
-        // Create session
-        await SessionService.createSession(user.id, tokens);
-
-        return { user, tokens };
-      } else {
-        throw new Error('Invalid credentials');
+      } catch (contractError: any) {
+        console.warn('⚠️ Contract authentication failed, falling back to database:', contractError.message);
       }
-
-    } catch (error: any) {
-      console.error('Contract authentication error:', error);
-      throw new Error(`Authentication failed: ${error.message}`);
     }
+
+    // Fallback to database authentication
+    console.log('🔄 Using database authentication fallback');
+    return this.authenticateWithDatabase(username, password);
   }
 
   /**
@@ -332,32 +278,34 @@ export class AuthService {
         // Hash password for contract
         const passwordHash = await PasswordUtil.hash(password);
 
-        // Execute contract registration
-        const tx = contract.tx.register_identity(
-          {
-            gasLimit: {
-              refTime: 3000000000,
-              proofSize: 1000000,
-            } as any,
-            storageDepositLimit: null,
-          },
-          username,
-          passwordHash,
-          socialIdHash,
-          socialProvider
-        );
+        // Check if the method exists
+        if (contract.tx && contract.tx.register_identity) {
+          // Execute contract registration
+          const tx = contract.tx.register_identity(
+            {
+              gasLimit: -1, // Use automatic gas estimation
+              storageDepositLimit: null,
+            },
+            username,
+            passwordHash,
+            socialIdHash,
+            socialProvider
+          );
 
-        // Sign and send transaction
-        transactionHash = await new Promise((resolve, reject) => {
-          tx.signAndSend(serviceAccount, (result) => {
-            if (result.status.isInBlock) {
-              console.log(`✅ Contract registration in block: ${result.status.asInBlock}`);
-              resolve(result.txHash.toString());
-            } else if (result.isError) {
-              reject(new Error('Contract registration failed'));
-            }
-          }).catch(reject);
-        });
+          // Sign and send transaction
+          transactionHash = await new Promise((resolve, reject) => {
+            tx.signAndSend(serviceAccount, (result) => {
+              if (result.status.isInBlock) {
+                console.log(`✅ Contract registration in block: ${result.status.asInBlock}`);
+                resolve(result.txHash.toString());
+              } else if (result.isError) {
+                reject(new Error('Contract registration failed'));
+              }
+            }).catch(reject);
+          });
+        } else {
+          console.warn('⚠️ Contract method register_identity not available');
+        }
 
       } catch (error: any) {
         console.error('Contract registration error:', error);
@@ -367,16 +315,16 @@ export class AuthService {
 
     // Create user in database
     const passwordHash = await PasswordUtil.hash(password);
-    
+
     // Try to insert with username, fallback without if column doesn't exist
     let insertData: any = {
       email: `${username}@authentify.local`, // Placeholder email
       password_hash: passwordHash,
       wallet_address: walletAddress,
     };
-    
+
     let user: any;
-    
+
     // Try to add username if the column exists
     try {
       insertData.username = username;
@@ -385,7 +333,7 @@ export class AuthService {
         .insert(insertData)
         .select()
         .single();
-        
+
       if (error) {
         if (error.message.includes('username')) {
           // Username column doesn't exist, try without it
@@ -395,11 +343,11 @@ export class AuthService {
             .insert(insertData)
             .select()
             .single();
-            
+
           if (fallbackError) {
             throw new Error(`Failed to create user: ${fallbackError.message}`);
           }
-          
+
           // Add username to the response object for consistency
           fallbackUser.username = username;
           user = fallbackUser;
@@ -418,7 +366,6 @@ export class AuthService {
       userId: user.id,
       email: user.email,
       walletAddress: user.wallet_address,
-      username: username,
     };
 
     const tokens = JWTUtil.generateTokenPair(tokenPayload);
@@ -465,7 +412,6 @@ export class AuthService {
         userId: user.id,
         email: user.email,
         walletAddress: user.wallet_address,
-        username: user.username || username,
       };
 
       const tokens = JWTUtil.generateTokenPair(tokenPayload);
