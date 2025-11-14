@@ -1,4 +1,4 @@
-import { ApiPromise, WsProvider, Keyring } from '@polkadot/api';
+import { ApiPromise, WsProvider, HttpProvider, Keyring } from '@polkadot/api';
 import { ContractPromise } from '@polkadot/api-contract';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { config } from './environment.config';
@@ -16,54 +16,98 @@ let serviceAccount: KeyringPair | null = null;
  * Initialize Polkadot API connection
  */
 export async function initializePolkadotAPI(): Promise<void> {
-  try {
-    console.log('🔗 Connecting to Substrate node...');
-    const provider = new WsProvider(config.SUBSTRATE_WS_ENDPOINT, false, undefined, 5000); // 5 second timeout
-    
-    // Add timeout to the connection attempt
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Connection timeout after 10 seconds')), 10000);
-    });
-    
-    api = await Promise.race([
-      ApiPromise.create({ provider }),
-      timeoutPromise
-    ]) as ApiPromise;
-    
-    await api.isReady;
-    
-    console.log('✅ Connected to Substrate node');
-    console.log(`🌐 Chain: ${await api.rpc.system.chain()}`);
+  // Try multiple RPC endpoints (WebSocket and HTTP)
+  const endpoints = [
+    config.SUBSTRATE_WS_ENDPOINT,
+    'wss://rpc1.paseo.popnetwork.xyz',
+    'wss://rpc2.paseo.popnetwork.xyz', 
+    'wss://rpc3.paseo.popnetwork.xyz',
+    'https://rpc1.paseo.popnetwork.xyz',
+    'https://rpc2.paseo.popnetwork.xyz'
+  ];
 
-    // Initialize keyring and service account
-    const keyring = new Keyring({ type: 'sr25519' });
-    serviceAccount = keyring.addFromUri(config.SERVICE_ACCOUNT_SEED);
-    
-    console.log(`🔑 Service account: ${serviceAccount.address}`);
-
-    // Load contract metadata if available
-    if (fs.existsSync(CONTRACT_METADATA_PATH)) {
-      try {
-        const metadata = JSON.parse(fs.readFileSync(CONTRACT_METADATA_PATH, 'utf8'));
+  for (const endpoint of endpoints) {
+    try {
+      console.log(`🔗 Connecting to Substrate node: ${endpoint}...`);
+      
+      // Create appropriate provider based on endpoint type
+      let provider;
+      if (endpoint.startsWith('wss://') || endpoint.startsWith('ws://')) {
+        provider = new WsProvider(endpoint, false, undefined, 8000); // 8 second timeout
         
-        // Initialize contract instance
-        contract = new ContractPromise(api, metadata, config.CONTRACT_ADDRESS);
-        
-        console.log('✅ Contract initialized');
-        console.log(`📄 Contract address: ${config.CONTRACT_ADDRESS}`);
-      } catch (error) {
-        console.error('❌ Failed to load contract metadata:', error);
+        // Add connection event listeners for debugging WebSocket
+        provider.on('connected', () => console.log(`🔌 WebSocket connected to ${endpoint}`));
+        provider.on('disconnected', () => console.log(`🔌 WebSocket disconnected from ${endpoint}`));
+        provider.on('error', (error) => console.log(`🔌 WebSocket error for ${endpoint}:`, error.message));
+      } else {
+        // HTTP provider
+        provider = new HttpProvider(endpoint);
+        console.log(`🔌 Using HTTP provider for ${endpoint}`);
       }
-    } else {
-      console.warn('⚠️  Contract metadata not found. Contract calls will be limited.');
-      console.warn(`📁 Expected location: ${CONTRACT_METADATA_PATH}`);
-      console.warn('📋 Copy contract metadata after deployment: cp ../contract/target/ink/authentify_contract.json ./contract-metadata.json');
-    }
+      
+      // Create API with shorter timeout
+      const apiPromise = ApiPromise.create({ 
+        provider,
+        throwOnConnect: true,
+        throwOnUnknown: false
+      });
+      
+      // Add timeout to the connection attempt
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error(`Connection timeout after 10 seconds for ${endpoint}`)), 10000);
+      });
+      
+      api = await Promise.race([
+        apiPromise,
+        timeoutPromise
+      ]) as ApiPromise;
+      
+      await api.isReady;
+      
+      console.log(`✅ Connected to Substrate node: ${endpoint}`);
+      console.log(`🌐 Chain: ${await api.rpc.system.chain()}`);
 
-  } catch (error) {
-    console.error('❌ Failed to initialize Polkadot API:', error);
-    throw error;
+      // Initialize keyring and service account
+      const keyring = new Keyring({ type: 'sr25519' });
+      serviceAccount = keyring.addFromUri(config.SERVICE_ACCOUNT_SEED);
+      
+      console.log(`🔑 Service account: ${serviceAccount.address}`);
+
+      // Load contract metadata if available
+      if (fs.existsSync(CONTRACT_METADATA_PATH)) {
+        try {
+          const metadata = JSON.parse(fs.readFileSync(CONTRACT_METADATA_PATH, 'utf8'));
+          
+          // Initialize contract instance
+          contract = new ContractPromise(api, metadata, config.CONTRACT_ADDRESS);
+          
+          console.log('✅ Contract initialized');
+          console.log(`📄 Contract address: ${config.CONTRACT_ADDRESS}`);
+        } catch (error) {
+          console.error('❌ Failed to load contract metadata:', error);
+        }
+      } else {
+        console.warn('⚠️  Contract metadata not found. Contract calls will be limited.');
+        console.warn(`📁 Expected location: ${CONTRACT_METADATA_PATH}`);
+        console.warn('📋 Copy contract metadata after deployment: cp ../contract/target/ink/authentify_contract.json ./contract-metadata.json');
+      }
+
+      // Successfully connected, break out of the loop
+      return;
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.warn(`⚠️  Failed to connect to ${endpoint}:`, errorMessage);
+      if (api) {
+        await api.disconnect();
+        api = null;
+      }
+      // Continue to next endpoint
+    }
   }
+
+  // If we get here, all endpoints failed
+  throw new Error('❌ Failed to connect to any Pop Network RPC endpoint');
 }
 
 /**

@@ -204,7 +204,22 @@ export class AuthController {
         try {
             const { username, password, walletAddress, socialIdHash, socialProvider } = req.body;
 
+            console.log('📝 Contract registration request:', {
+                username,
+                password: password ? '[REDACTED]' : undefined,
+                walletAddress,
+                socialIdHash,
+                socialProvider,
+            });
+
             if (!username || !password || !walletAddress || !socialIdHash || !socialProvider) {
+                console.error('❌ Missing required fields:', {
+                    username: !!username,
+                    password: !!password,
+                    walletAddress: !!walletAddress,
+                    socialIdHash: !!socialIdHash,
+                    socialProvider: !!socialProvider,
+                });
                 return ResponseUtil.error(res, 'All fields are required');
             }
 
@@ -216,8 +231,10 @@ export class AuthController {
                 socialProvider,
             });
 
+            console.log('✅ Contract registration successful for user:', username);
             return ResponseUtil.success(res, result, 'Registration successful', 201);
         } catch (error: any) {
+            console.error('❌ Contract registration error:', error.message);
             return ResponseUtil.error(res, error.message);
         }
     }
