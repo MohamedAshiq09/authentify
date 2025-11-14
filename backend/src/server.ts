@@ -91,12 +91,21 @@ async function startServer() {
     // Try to initialize Polkadot API (optional in development)
     console.log('🔗 Initializing Polkadot connection...');
     try {
-      await initializePolkadotAPI();
+      // Set a shorter timeout for the initialization
+      const initTimeout = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Polkadot initialization timeout')), 15000);
+      });
+      
+      await Promise.race([
+        initializePolkadotAPI(),
+        initTimeout
+      ]);
       console.log('✅ Polkadot connection established');
     } catch (polkadotError) {
       console.warn('⚠️  Polkadot connection failed - continuing without blockchain features');
-      console.warn('💡 To enable blockchain features, start a local node: contracts-node --dev');
-      console.warn('   Or update SUBSTRATE_WS_ENDPOINT in .env to a running node');
+      console.warn('💡 To enable blockchain features, ensure Pop Network RPC is accessible');
+      console.warn(`   Current endpoint: ${config.SUBSTRATE_WS_ENDPOINT}`);
+      console.warn('   The backend will work with database-only authentication for now');
     }
 
     // Start server
