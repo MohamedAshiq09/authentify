@@ -187,7 +187,7 @@ export function LoginForm({
             <div className="w-full border-t border-gray-600"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-black text-gray-400">Or continue with</span>
+            <span className="px-4 bg-black text-pink-400">Or continue with</span>
           </div>
         </div>
 
@@ -225,7 +225,7 @@ export function LoginForm({
                 <div className="w-full border-t border-gray-600"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-black text-gray-400">Or use biometric</span>
+                <span className="px-4 bg-black text-pink-400">Or use biometric</span>
               </div>
             </div>
 
