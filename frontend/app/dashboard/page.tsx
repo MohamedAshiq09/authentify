@@ -25,6 +25,7 @@ import {
   BarChart3
 } from 'lucide-react';
 import { BiometricAuth } from '@/components/auth/biometric-auth';
+import { UserSidebar } from '@/components/user/sidebar';
 
 interface UserProfile {
   id: string;
@@ -50,6 +51,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [showBiometricSetup, setShowBiometricSetup] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState('overview');
 
   useEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
@@ -139,6 +141,275 @@ export default function DashboardPage() {
     );
   }
 
+  const renderOverviewContent = () => (
+    <div className="flex-1 p-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold mb-1">Authentify Project</h1>
+        <div className="text-sm text-gray-400">Project ID</div>
+      </div>
+
+      {/* User Details Section */}
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold mb-4 text-white">User Details</h2>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
+            <div className="text-xs text-gray-400 mb-1">EMAIL</div>
+            <div className="text-lg font-mono text-white break-all">{user?.email}</div>
+          </div>
+          <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
+            <div className="text-xs text-gray-400 mb-1">ACCOUNT CREATED</div>
+            <div className="text-lg text-white">
+              {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+            </div>
+          </div>
+          {user?.wallet_address && (
+            <div className="p-4 rounded-lg bg-gray-900 border border-gray-800 md:col-span-2">
+              <div className="text-xs text-gray-400 mb-1">WALLET ADDRESS</div>
+              <div className="text-lg font-mono text-white break-all">{user.wallet_address}</div>
+            </div>
+          )}
+          <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
+            <div className="text-xs text-gray-400 mb-1">SECURITY LEVEL</div>
+            <div className="text-lg font-bold text-green-400">
+              {biometricCredentials.length > 0 ? 'High' : 'Medium'}
+            </div>
+          </div>
+          <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
+            <div className="text-xs text-gray-400 mb-1">BIOMETRIC METHODS</div>
+            <div className="text-lg font-bold text-purple-400">{biometricCredentials.length}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Metrics */}
+      <div className="grid grid-cols-2 gap-8 mb-8">
+        <div>
+          <div className="text-sm text-gray-400 mb-1">Bandwidth</div>
+          <div className="text-4xl font-bold">1.19 <span className="text-lg text-gray-400">GB</span></div>
+        </div>
+        <div className="text-right">
+          <div className="text-sm text-gray-400 mb-1">Requests</div>
+          <div className="text-4xl font-bold">2K</div>
+        </div>
+      </div>
+
+      {/* Chart */}
+      <div className="h-48 flex items-end gap-1 mb-8">
+        {Array.from({ length: 50 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex-1 bg-gradient-to-t from-pink-500 to-pink-400 rounded-t"
+            style={{
+              height: `${Math.random() * 100}%`,
+              opacity: 0.6 + Math.random() * 0.4,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Bottom Stats */}
+      <div className="grid grid-cols-2 gap-6">
+        <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
+          <div className="text-xs text-gray-400 mb-1">DATABASES</div>
+          <div className="text-2xl font-bold">4</div>
+          <div className="text-xs text-gray-400">Databases</div>
+        </div>
+        <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
+          <div className="text-xs text-gray-400 mb-1">STORAGE</div>
+          <div className="text-2xl font-bold">8.0 <span className="text-sm">MB</span></div>
+          <div className="text-xs text-gray-400">Storage</div>
+        </div>
+      </div>
+
+      {/* Logout Button */}
+      <div className="mt-8">
+        <Button 
+          onClick={handleLogout} 
+          variant="outline" 
+          className="border-gray-600 text-gray-400 hover:bg-gray-800 hover:text-white"
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Logout
+        </Button>
+      </div>
+    </div>
+  );
+
+  const renderAuthContent = () => (
+    <div className="flex-1 p-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold mb-1">Authentication Settings</h1>
+        <div className="text-sm text-gray-400">Manage your security settings</div>
+      </div>
+
+      {/* Biometric Authentication Section */}
+      <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+              <Fingerprint className="h-5 w-5 text-pink-400" />
+              Biometric Authentication
+            </h2>
+            <p className="text-gray-400 mt-1">
+              Secure your account with fingerprint, face recognition, or security keys
+            </p>
+          </div>
+          {biometricCredentials.length === 0 && (
+            <Button 
+              onClick={() => setShowBiometricSetup(true)}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Enable Biometric
+            </Button>
+          )}
+        </div>
+
+        {biometricCredentials.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="mx-auto mb-4 p-4 bg-gray-800 rounded-full w-fit">
+              <Lock className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Biometric Authentication Not Enabled
+            </h3>
+            <p className="text-gray-400 mb-4 max-w-md mx-auto">
+              Add an extra layer of security to your account with biometric authentication. 
+              Use your fingerprint, face, or security key to login quickly and securely.
+            </p>
+            <div className="flex flex-wrap justify-center gap-2 mb-6">
+              <Badge variant="secondary" className="flex items-center gap-1 bg-gray-800 text-gray-300">
+                <Smartphone className="h-3 w-3" />
+                Touch ID
+              </Badge>
+              <Badge variant="secondary" className="flex items-center gap-1 bg-gray-800 text-gray-300">
+                <Smartphone className="h-3 w-3" />
+                Face ID
+              </Badge>
+              <Badge variant="secondary" className="flex items-center gap-1 bg-gray-800 text-gray-300">
+                <Key className="h-3 w-3" />
+                Security Keys
+              </Badge>
+            </div>
+            {!showBiometricSetup && (
+              <Button 
+                onClick={() => setShowBiometricSetup(true)}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90"
+              >
+                <Fingerprint className="mr-2 h-4 w-4" />
+                Set Up Biometric Authentication
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-4">
+              <CheckCircle2 className="h-5 w-5 text-green-400" />
+              <span className="font-medium text-green-400">
+                Biometric authentication is enabled
+              </span>
+            </div>
+            
+            {/* Show biometric setup for adding more methods */}
+            {showBiometricSetup && (
+              <div className="border-2 border-dashed border-gray-600 rounded-lg p-4">
+                <h4 className="font-medium mb-3 text-white">Add Another Biometric Method</h4>
+                <BiometricAuth
+                  userEmail={user?.email || ''}
+                  userName={user?.email?.split('@')[0] || ''}
+                  mode="register"
+                  token={token || ''}
+                  showTitle={false}
+                  compact={true}
+                  onRegisterSuccess={handleBiometricSuccess}
+                />
+              </div>
+            )}
+            
+            {!showBiometricSetup && (
+              <Button 
+                onClick={() => setShowBiometricSetup(true)}
+                variant="outline"
+                className="mb-4 border-gray-600 text-gray-400 hover:bg-gray-800 hover:text-white"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Another Method
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* Biometric Setup Component */}
+        {showBiometricSetup && biometricCredentials.length === 0 && (
+          <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 mt-4">
+            <BiometricAuth
+              userEmail={user?.email || ''}
+              userName={user?.email?.split('@')[0] || ''}
+              mode="register"
+              token={token || ''}
+              showTitle={false}
+              onRegisterSuccess={handleBiometricSuccess}
+            />
+            <div className="mt-4 text-center">
+              <Button 
+                variant="ghost" 
+                onClick={() => setShowBiometricSetup(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Existing Credentials Management */}
+        {biometricCredentials.length > 0 && (
+          <BiometricAuth
+            userEmail={user?.email || ''}
+            userName={user?.email?.split('@')[0] || ''}
+            mode="authenticate"
+            token={token || ''}
+            showTitle={false}
+            compact={true}
+            onAuthSuccess={(result) => {
+              console.log('Biometric auth successful:', result);
+            }}
+          />
+        )}
+      </div>
+
+      {/* Logout Button */}
+      <div className="mt-8">
+        <Button 
+          onClick={handleLogout} 
+          variant="outline" 
+          className="border-gray-600 text-gray-400 hover:bg-gray-800 hover:text-white"
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Logout
+        </Button>
+      </div>
+    </div>
+  );
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'overview':
+        return renderOverviewContent();
+      case 'auth':
+        return renderAuthContent();
+      default:
+        return (
+          <div className="flex-1 p-6">
+            <div className="text-center py-12">
+              <h2 className="text-xl font-semibold text-white mb-2">Coming Soon</h2>
+              <p className="text-gray-400">This section is under development.</p>
+            </div>
+          </div>
+        );
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
@@ -153,241 +424,13 @@ export default function DashboardPage() {
 
       <div className="flex">
         {/* Sidebar */}
-        <div className="w-64 bg-black border-r border-gray-800 min-h-screen">
-          <div className="p-6">
-            <div className="text-xs text-gray-500 uppercase tracking-wide mb-4">BUILD</div>
-            <div className="space-y-1">
-              <button className="w-full text-left px-3 py-2 rounded-lg bg-gray-800 text-white text-sm flex items-center gap-3 hover:bg-gray-700 transition-colors">
-                <Activity className="h-4 w-4" />
-                Overview
-              </button>
-              <button className="w-full text-left px-3 py-2 rounded-lg text-gray-400 text-sm flex items-center gap-3 hover:bg-gray-800 transition-colors">
-                <Shield className="h-4 w-4" />
-                Auth
-              </button>
-              <button className="w-full text-left px-3 py-2 rounded-lg text-gray-400 text-sm flex items-center gap-3 hover:bg-gray-800 transition-colors">
-                <Database className="h-4 w-4" />
-                Databases
-              </button>
-              <button className="w-full text-left px-3 py-2 rounded-lg text-gray-400 text-sm flex items-center gap-3 hover:bg-gray-800 transition-colors">
-                <Zap className="h-4 w-4" />
-                Functions
-              </button>
-              <button className="w-full text-left px-3 py-2 rounded-lg text-gray-400 text-sm flex items-center gap-3 hover:bg-gray-800 transition-colors">
-                <Database className="h-4 w-4" />
-                Storage
-              </button>
-              <button className="w-full text-left px-3 py-2 rounded-lg text-gray-400 text-sm flex items-center gap-3 hover:bg-gray-800 transition-colors">
-                <Users className="h-4 w-4" />
-                Messaging
-              </button>
-            </div>
-          </div>
-        </div>
+        <UserSidebar 
+          activeSection={activeSection} 
+          onSectionChange={setActiveSection} 
+        />
 
         {/* Main Content */}
-        <div className="flex-1 p-6">
-          <div className="mb-6">
-            <h1 className="text-2xl font-semibold mb-1">Authentify Project</h1>
-            <div className="text-sm text-gray-400">Project ID</div>
-          </div>
-
-          {/* Metrics */}
-          <div className="grid grid-cols-2 gap-8 mb-8">
-            <div>
-              <div className="text-sm text-gray-400 mb-1">Bandwidth</div>
-              <div className="text-4xl font-bold">1.19 <span className="text-lg text-gray-400">GB</span></div>
-            </div>
-            <div className="text-right">
-              <div className="text-sm text-gray-400 mb-1">Requests</div>
-              <div className="text-4xl font-bold">2K</div>
-            </div>
-          </div>
-
-          {/* Chart */}
-          <div className="h-48 flex items-end gap-1 mb-8">
-            {Array.from({ length: 50 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex-1 bg-gradient-to-t from-pink-500 to-pink-400 rounded-t"
-                style={{
-                  height: `${Math.random() * 100}%`,
-                  opacity: 0.6 + Math.random() * 0.4,
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Bottom Stats */}
-          <div className="grid grid-cols-2 gap-6">
-            <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
-              <div className="text-xs text-gray-400 mb-1">DATABASES</div>
-              <div className="text-2xl font-bold">4</div>
-              <div className="text-xs text-gray-400">Databases</div>
-            </div>
-            <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
-              <div className="text-xs text-gray-400 mb-1">STORAGE</div>
-              <div className="text-2xl font-bold">8.0 <span className="text-sm">MB</span></div>
-              <div className="text-xs text-gray-400">Storage</div>
-            </div>
-          </div>
-
-          {/* Hidden Biometric Section - Preserve functionality */}
-          <div className="hidden">
-            {/* Biometric Authentication Section */}
-            <div className="mt-8">
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <Fingerprint className="h-5 w-5" />
-                        Biometric Authentication
-                      </CardTitle>
-                      <CardDescription>
-                        Secure your account with fingerprint, face recognition, or security keys
-                      </CardDescription>
-                    </div>
-                    {biometricCredentials.length === 0 && (
-                      <Button 
-                        onClick={() => setShowBiometricSetup(true)}
-                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90"
-                      >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Enable Biometric
-                      </Button>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {biometricCredentials.length === 0 ? (
-                    <div className="text-center py-8">
-                      <div className="mx-auto mb-4 p-4 bg-gray-100 rounded-full w-fit">
-                        <Lock className="h-8 w-8 text-gray-400" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        Biometric Authentication Not Enabled
-                      </h3>
-                      <p className="text-gray-600 mb-4 max-w-md mx-auto">
-                        Add an extra layer of security to your account with biometric authentication. 
-                        Use your fingerprint, face, or security key to login quickly and securely.
-                      </p>
-                      <div className="flex flex-wrap justify-center gap-2 mb-6">
-                        <Badge variant="secondary" className="flex items-center gap-1">
-                          <Smartphone className="h-3 w-3" />
-                          Touch ID
-                        </Badge>
-                        <Badge variant="secondary" className="flex items-center gap-1">
-                          <Smartphone className="h-3 w-3" />
-                          Face ID
-                        </Badge>
-                        <Badge variant="secondary" className="flex items-center gap-1">
-                          <Key className="h-3 w-3" />
-                          Security Keys
-                        </Badge>
-                      </div>
-                      {!showBiometricSetup && (
-                        <Button 
-                          onClick={() => setShowBiometricSetup(true)}
-                          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90"
-                        >
-                          <Fingerprint className="mr-2 h-4 w-4" />
-                          Set Up Biometric Authentication
-                        </Button>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2 mb-4">
-                        <CheckCircle2 className="h-5 w-5 text-green-600" />
-                        <span className="font-medium text-green-800">
-                          Biometric authentication is enabled
-                        </span>
-                      </div>
-                      
-                      {/* Show biometric setup for adding more methods */}
-                      {showBiometricSetup && (
-                        <div className="border-2 border-dashed border-purple-200 rounded-lg p-4">
-                          <h4 className="font-medium mb-3">Add Another Biometric Method</h4>
-                          <BiometricAuth
-                            userEmail={user?.email || ''}
-                            userName={user?.email?.split('@')[0] || ''}
-                            mode="register"
-                            token={token || ''}
-                            showTitle={false}
-                            compact={true}
-                            onRegisterSuccess={handleBiometricSuccess}
-                          />
-                        </div>
-                      )}
-                      
-                      {!showBiometricSetup && (
-                        <Button 
-                          onClick={() => setShowBiometricSetup(true)}
-                          variant="outline"
-                          className="mb-4"
-                        >
-                          <Plus className="mr-2 h-4 w-4" />
-                          Add Another Method
-                        </Button>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Biometric Setup Component */}
-                  {showBiometricSetup && biometricCredentials.length === 0 && (
-                    <div className="border-2 border-dashed border-purple-200 rounded-lg p-6">
-                      <BiometricAuth
-                        userEmail={user?.email || ''}
-                        userName={user?.email?.split('@')[0] || ''}
-                        mode="register"
-                        token={token || ''}
-                        showTitle={false}
-                        onRegisterSuccess={handleBiometricSuccess}
-                      />
-                      <div className="mt-4 text-center">
-                        <Button 
-                          variant="ghost" 
-                          onClick={() => setShowBiometricSetup(false)}
-                          className="text-gray-500"
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Existing Credentials Management */}
-                  {biometricCredentials.length > 0 && (
-                    <BiometricAuth
-                      userEmail={user?.email || ''}
-                      userName={user?.email?.split('@')[0] || ''}
-                      mode="authenticate"
-                      token={token || ''}
-                      showTitle={false}
-                      compact={true}
-                      onAuthSuccess={(result) => {
-                        console.log('Biometric auth successful:', result);
-                      }}
-                    />
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Logout Button */}
-          <div className="mt-8">
-            <Button 
-              onClick={handleLogout} 
-              variant="outline" 
-              className="border-gray-600 text-gray-400 hover:bg-gray-800 hover:text-white"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
-          </div>
-        </div>
+        {renderContent()}
       </div>
     </div>
   );
