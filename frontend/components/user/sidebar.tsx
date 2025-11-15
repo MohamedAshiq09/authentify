@@ -6,7 +6,8 @@ import {
   Shield,
   Database,
   Zap,
-  Users
+  Users,
+  Key
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -18,6 +19,7 @@ export function UserSidebar({ activeSection, onSectionChange }: SidebarProps) {
   const menuItems = [
     { id: 'overview', label: 'Overview', icon: Activity },
     { id: 'auth', label: 'Auth', icon: Shield },
+    { id: 'api', label: 'API', icon: Key },
     { id: 'databases', label: 'Databases', icon: Database },
     { id: 'functions', label: 'Functions', icon: Zap },
     { id: 'storage', label: 'Storage', icon: Database },
