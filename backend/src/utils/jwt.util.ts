@@ -45,7 +45,7 @@ export class JWTUtil {
   static verifyAccessToken(token: string): TokenPayload {
     try {
       return jwt.verify(token, config.JWT_SECRET) as TokenPayload;
-    } catch (error) {
+    } catch (error: any) {
       throw new Error('Invalid or expired access token');
     }
   }

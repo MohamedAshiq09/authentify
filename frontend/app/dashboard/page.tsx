@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { BiometricAuth } from '@/components/auth/biometric-auth';
 import { UserSidebar } from '@/components/user/sidebar';
+import { SDKClientManager } from '@/components/sdk/sdk-client-manager';
 
 interface UserProfile {
   id: string;
@@ -392,12 +393,25 @@ export default function DashboardPage() {
     </div>
   );
 
+  const renderAPIContent = () => (
+    <div className="flex-1 p-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold mb-1">API Management</h1>
+        <div className="text-sm text-gray-400">Manage your SDK clients and API keys</div>
+      </div>
+
+      <SDKClientManager token={token || ''} />
+    </div>
+  );
+
   const renderContent = () => {
     switch (activeSection) {
       case 'overview':
         return renderOverviewContent();
       case 'auth':
         return renderAuthContent();
+      case 'api':
+        return renderAPIContent();
       default:
         return (
           <div className="flex-1 p-6">
