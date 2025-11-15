@@ -1,31 +1,45 @@
-// Export main SDK class
-export { AuthentifySDK } from "./sdk";
+// Main SDK export
+export { AuthentifySDK } from './sdk';
 
-// Export types
+// Type exports
 export type {
   AuthentifyConfig,
-  IdentityInfo,
-  SessionInfo,
-  AuthSession,
-  ContractResult,
+  UserRegistration,
+  UserLogin,
   UserProfile,
-  ApiResponse,
-} from "./types";
+  AuthSession,
+  BiometricOptions,
+  BiometricAssertion,
+  UseAuthentifyReturn,
+  SDKClient,
+  APIResponse,
+  APIError,
+  WalletAccount,
+  ContractIdentity,
+  AuthStats,
+} from './types';
 
-// Export client classes
-export { ApiClient } from "./client";
-export { ContractClient } from "./contract";
-
-// Export utilities
+// Utility exports
 export {
-  AuthentifyError,
-  hashPassword,
-  generateSessionId,
-  parseContractResult,
-} from "./utils";
+  validateConfig,
+  validateEmail,
+  validatePassword,
+  isValidURL,
+  generateRandomString,
+  base64URLEncode,
+  base64URLDecode,
+  formatError,
+  debounce,
+  isBrowser,
+  safeJSONParse,
+  withTimeout,
+} from './utils';
 
-// Export constants
-export { DEFAULT_CONFIG, CONTRACT_METHODS, ENDPOINTS } from "./constants";
-
-// Version
-export const VERSION = "1.0.0";
+// React integration exports (optional)
+export {
+  useAuthentify,
+  useAuthentifyContext,
+  useWallet,
+  useBiometric,
+  AuthentifyProvider,
+} from './react/hooks';

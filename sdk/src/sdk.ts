@@ -1,462 +1,342 @@
-import { ApiClient } from "./client";
-import { ContractClient } from "./contract";
-import {
-  AuthentifyConfig,
-  UserRegistration,
-  UserLogin,
+import axios, { AxiosInstance } from 'axios';
+import { 
+  AuthentifyConfig, 
+  UserRegistration, 
+  UserLogin, 
+  UserProfile, 
   AuthSession,
-  UserProfile,
-  IdentityInfo,
-} from "./types";
-import {
-  validateUsername,
-  validatePassword,
-  validateEmail,
-  hashPassword,
-  parseErrorMessage,
-  AuthentifyError,
-} from "./utils";
-import { DEFAULT_CONFIG, ERRORS } from "./constants";
+  BiometricOptions,
+  BiometricAssertion
+} from './types';
+import { validateConfig, validateEmail, validatePassword } from './utils';
 
 export class AuthentifySDK {
+  private client: AxiosInstance;
   private config: AuthentifyConfig;
-  private apiClient: ApiClient;
-  private contractClient: ContractClient | null = null;
-  private currentSession: AuthSession | null = null;
   private currentUser: UserProfile | null = null;
+  private currentSession: AuthSession | null = null;
 
   constructor(config: AuthentifyConfig) {
-    this.validateConfig(config);
+    validateConfig(config);
     this.config = config;
-    this.apiClient = new ApiClient(config);
+    
+    this.client = axios.create({
+      baseURL: config.apiUrl,
+      timeout: config.timeout || 10000,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Client-ID': config.clientId,
+      },
+    });
 
-    // Initialize contract client if contract address provided
-    if (config.contractAddress) {
-      this.contractClient = new ContractClient(config);
-    }
-
-    // Load existing session from storage
-    this.loadSessionFromStorage();
-  }
-
-  private validateConfig(config: AuthentifyConfig): void {
-    if (!config.clientId) {
-      throw new AuthentifyError("Client ID is required", "INVALID_CONFIG");
-    }
-    if (!config.apiUrl) {
-      throw new AuthentifyError("API URL is required", "INVALID_CONFIG");
-    }
-  }
-
-  private loadSessionFromStorage(): void {
-    try {
-      const sessionData = localStorage.getItem(
-        DEFAULT_CONFIG.SESSION_STORAGE_KEY
-      );
-      const userData = localStorage.getItem(DEFAULT_CONFIG.USER_STORAGE_KEY);
-
-      if (sessionData) {
-        this.currentSession = JSON.parse(sessionData);
+    // Add request interceptor to include auth token
+    this.client.interceptors.request.use((config) => {
+      const token = this.getStoredToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
       }
+      return config;
+    });
 
-      if (userData) {
-        this.currentUser = JSON.parse(userData);
+    // Add response interceptor for error handling
+    this.client.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          this.clearSession();
+        }
+        return Promise.reject(error);
       }
-    } catch (error) {
-      // Ignore storage errors
-    }
-  }
+    );
 
-  private saveSessionToStorage(session: AuthSession, user: UserProfile): void {
-    try {
-      localStorage.setItem(
-        DEFAULT_CONFIG.SESSION_STORAGE_KEY,
-        JSON.stringify(session)
-      );
-      localStorage.setItem(
-        DEFAULT_CONFIG.USER_STORAGE_KEY,
-        JSON.stringify(user)
-      );
-    } catch (error) {
-      // Ignore storage errors
-    }
-  }
-
-  private clearSessionFromStorage(): void {
-    try {
-      localStorage.removeItem(DEFAULT_CONFIG.SESSION_STORAGE_KEY);
-      localStorage.removeItem(DEFAULT_CONFIG.USER_STORAGE_KEY);
-    } catch (error) {
-      // Ignore storage errors
-    }
+    // Load existing session
+    this.loadStoredSession();
   }
 
   /**
    * Register a new user
    */
-  public async register(data: UserRegistration): Promise<UserProfile> {
+  async register(data: UserRegistration): Promise<UserProfile> {
     try {
-      // Validate inputs
-      validateUsername(data.username);
-      validatePassword(data.password);
-
-      if (data.email) {
-        validateEmail(data.email);
+      // Validate input
+      if (!validateEmail(data.email)) {
+        throw new Error('Invalid email address');
+      }
+      if (!validatePassword(data.password)) {
+        throw new Error('Password must be at least 8 characters long');
       }
 
-      // Hash password client-side for security
-      const passwordHash = await hashPassword(data.password);
-
-      // Try contract registration first if available
-      if (this.contractClient) {
-        const contractResult = await this.contractClient.registerIdentity({
-          username: data.username,
-          password_hash: passwordHash,
-          social_id_hash: data.socialIdHash || "",
-          social_provider: data.socialProvider || "email",
-        });
-
-        // If contract registration successful, also register with backend
-        if (contractResult) {
-          const backendResult = await this.apiClient.register({
-            ...data,
-            password: passwordHash, // Send hashed password
-          });
-          return backendResult;
-        }
-      }
-
-      // Fallback to backend only
-      return await this.apiClient.register({
-        ...data,
-        password: passwordHash,
-      });
-    } catch (error) {
-      throw new AuthentifyError(
-        parseErrorMessage(error),
-        "REGISTRATION_FAILED",
-        error
-      );
-    }
-  }
-
-  /**
-   * Authenticate user and create session
-   */
-  public async login(credentials: UserLogin): Promise<AuthSession> {
-    try {
-      // Validate inputs
-      if (credentials.username) {
-        validateUsername(credentials.username);
-      }
-      if (credentials.email) {
-        validateEmail(credentials.email);
-      }
-      validatePassword(credentials.password);
-
-      // Hash password for authentication
-      const passwordHash = await hashPassword(credentials.password);
-
-      // Try contract authentication first if available
-      if (this.contractClient && credentials.username) {
-        const accountId = await this.contractClient.authenticate(
-          credentials.username,
-          passwordHash
-        );
-
-        if (accountId) {
-          // Create session via contract
-          const sessionId = `sess_${Date.now()}_${Math.random()
-            .toString(36)
-            .substring(2)}`;
-          const session = await this.contractClient.createSession(
-            accountId,
-            sessionId,
-            24 * 60 * 60 * 1000 // 24 hours
-          );
-
-          if (session) {
-            this.currentSession = session;
-
-            // Also authenticate with backend for additional features
-            try {
-              const backendSession = await this.apiClient.login({
-                ...credentials,
-                password: passwordHash,
-              });
-
-              // Get user profile
-              const user = await this.apiClient.getUserProfile();
-              this.currentUser = user;
-              this.saveSessionToStorage(session, user);
-
-              return session;
-            } catch (backendError) {
-              // Backend auth failed, but contract auth succeeded
-              console.warn("Backend authentication failed:", backendError);
-              return session;
-            }
-          }
-        }
-      }
-
-      // Fallback to backend authentication
-      const session = await this.apiClient.login({
-        ...credentials,
-        password: passwordHash,
+      const response = await this.client.post('/api/auth/register', {
+        email: data.email,
+        password: data.password,
+        username: data.username,
+        wallet_address: data.walletAddress,
       });
 
-      const user = await this.apiClient.getUserProfile();
-
-      this.currentSession = session;
+      const { user, tokens } = response.data.data;
+      
+      // Store session
       this.currentUser = user;
-      this.saveSessionToStorage(session, user);
+      this.currentSession = tokens;
+      this.storeSession(tokens);
 
-      return session;
-    } catch (error) {
-      throw new AuthentifyError(
-        parseErrorMessage(error),
-        "LOGIN_FAILED",
-        error
-      );
+      return user;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Registration failed');
     }
   }
 
   /**
-   * Logout and revoke session
+   * Login user with email/password
    */
-  public async logout(): Promise<void> {
+  async login(credentials: UserLogin): Promise<AuthSession> {
+    try {
+      if (!validateEmail(credentials.email)) {
+        throw new Error('Invalid email address');
+      }
+
+      const response = await this.client.post('/api/auth/login', {
+        email: credentials.email,
+        password: credentials.password,
+      });
+
+      const { user, tokens } = response.data.data;
+      
+      // Store session
+      this.currentUser = user;
+      this.currentSession = tokens;
+      this.storeSession(tokens);
+
+      return tokens;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Login failed');
+    }
+  }
+
+  /**
+   * Login with biometric authentication
+   */
+  async loginWithBiometric(email: string, assertion: BiometricAssertion): Promise<AuthSession> {
+    try {
+      const response = await this.client.post('/api/sdk/auth/authenticate-complete', {
+        email,
+        biometric_assertion: assertion,
+      });
+
+      const { user, tokens } = response.data.data;
+      
+      // Store session
+      this.currentUser = user;
+      this.currentSession = tokens;
+      this.storeSession(tokens);
+
+      return tokens;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Biometric login failed');
+    }
+  }
+
+  /**
+   * Enable biometric authentication for current user
+   */
+  async enableBiometric(username: string): Promise<BiometricOptions> {
+    try {
+      if (!this.isAuthenticated()) {
+        throw new Error('User must be logged in to enable biometric authentication');
+      }
+
+      const response = await this.client.post('/api/sdk/biometric/enable', {
+        username,
+        authenticator_type: 'platform',
+      });
+
+      return response.data.data.registration_options;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to enable biometric authentication');
+    }
+  }
+
+  /**
+   * Logout current user
+   */
+  async logout(): Promise<void> {
     try {
       if (this.currentSession) {
-        // Revoke session in contract if available
-        if (this.contractClient) {
-          try {
-            await this.contractClient.revokeSession(
-              this.currentSession.sessionId
-            );
-          } catch (error) {
-            console.warn("Contract session revocation failed:", error);
-          }
-        }
-
-        // Revoke session in backend
-        try {
-          await this.apiClient.logout();
-        } catch (error) {
-          console.warn("Backend logout failed:", error);
-        }
+        await this.client.post('/api/auth/logout');
       }
-
-      // Clear local state
-      this.currentSession = null;
-      this.currentUser = null;
-      this.clearSessionFromStorage();
     } catch (error) {
-      // Don't throw on logout errors, just clear local state
-      this.currentSession = null;
-      this.currentUser = null;
-      this.clearSessionFromStorage();
+      // Continue with logout even if API call fails
+      console.warn('Logout API call failed:', error);
+    } finally {
+      this.clearSession();
     }
-  }
-
-  /**
-   * Check if user is authenticated
-   */
-  public isAuthenticated(): boolean {
-    if (!this.currentSession) return false;
-
-    // Check if session is expired
-    if (Date.now() > this.currentSession.expiresAt) {
-      this.currentSession = null;
-      this.currentUser = null;
-      this.clearSessionFromStorage();
-      return false;
-    }
-
-    return true;
   }
 
   /**
    * Get current user profile
    */
-  public getCurrentUser(): UserProfile | null {
+  getCurrentUser(): UserProfile | null {
     return this.currentUser;
   }
 
   /**
    * Get current session
    */
-  public getCurrentSession(): AuthSession | null {
+  getCurrentSession(): AuthSession | null {
     return this.currentSession;
   }
 
   /**
-   * Refresh session
+   * Check if user is authenticated
    */
-  public async refreshSession(): Promise<AuthSession> {
-    try {
-      if (!this.currentSession) {
-        throw new AuthentifyError("No active session to refresh", "NO_SESSION");
-      }
-
-      // Try contract session verification first
-      if (this.contractClient) {
-        const isValid = await this.contractClient.verifySession(
-          this.currentSession.sessionId
-        );
-        if (isValid) {
-          return this.currentSession;
-        }
-      }
-
-      // Refresh via backend
-      const newSession = await this.apiClient.refreshSession();
-      this.currentSession = newSession;
-
-      if (this.currentUser) {
-        this.saveSessionToStorage(newSession, this.currentUser);
-      }
-
-      return newSession;
-    } catch (error) {
-      throw new AuthentifyError(
-        parseErrorMessage(error),
-        "REFRESH_FAILED",
-        error
-      );
-    }
+  isAuthenticated(): boolean {
+    return !!(this.currentUser && this.currentSession && this.getStoredToken());
   }
 
   /**
-   * Check if username is available
+   * Refresh authentication session
    */
-  public async isUsernameAvailable(username: string): Promise<boolean> {
+  async refreshSession(): Promise<AuthSession> {
     try {
-      validateUsername(username);
-
-      // Check with contract first if available
-      if (this.contractClient) {
-        return await this.contractClient.isUsernameAvailable(username);
+      const refreshToken = this.getStoredRefreshToken();
+      if (!refreshToken) {
+        throw new Error('No refresh token available');
       }
 
-      // Fallback to backend check
-      return await this.apiClient.isUsernameAvailable(username);
-    } catch (error) {
-      throw new AuthentifyError(
-        parseErrorMessage(error),
-        "USERNAME_CHECK_FAILED",
-        error
-      );
+      const response = await this.client.post('/api/auth/refresh', {
+        refresh_token: refreshToken,
+      });
+
+      const tokens = response.data.data;
+      this.currentSession = tokens;
+      this.storeSession(tokens);
+
+      return tokens;
+    } catch (error: any) {
+      this.clearSession();
+      throw new Error(error.response?.data?.message || 'Session refresh failed');
     }
   }
 
   /**
    * Change user password
    */
-  public async changePassword(
-    oldPassword: string,
-    newPassword: string
-  ): Promise<void> {
+  async changePassword(oldPassword: string, newPassword: string): Promise<void> {
     try {
       if (!this.isAuthenticated()) {
-        throw new AuthentifyError(
-          "User not authenticated",
-          "NOT_AUTHENTICATED"
-        );
+        throw new Error('User must be logged in to change password');
       }
 
-      validatePassword(oldPassword);
-      validatePassword(newPassword);
-
-      const oldHash = await hashPassword(oldPassword);
-      const newHash = await hashPassword(newPassword);
-
-      // Try contract password change first if available
-      if (this.contractClient) {
-        await this.contractClient.changePassword(oldHash, newHash);
+      if (!validatePassword(newPassword)) {
+        throw new Error('New password must be at least 8 characters long');
       }
 
-      // Also update in backend
-      await this.apiClient.changePassword(oldHash, newHash);
-    } catch (error) {
-      throw new AuthentifyError(
-        parseErrorMessage(error),
-        "PASSWORD_CHANGE_FAILED",
-        error
-      );
+      await this.client.post('/api/auth/change-password', {
+        old_password: oldPassword,
+        new_password: newPassword,
+      });
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Password change failed');
     }
   }
 
   /**
-   * Get identity information from contract
+   * Check if username is available
    */
-  public async getIdentity(accountId: string): Promise<IdentityInfo | null> {
+  async isUsernameAvailable(username: string): Promise<boolean> {
     try {
-      if (!this.contractClient) {
-        throw new AuthentifyError(
-          "Contract client not initialized",
-          "NO_CONTRACT_CLIENT"
-        );
-      }
-
-      return await this.contractClient.getIdentity(accountId);
-    } catch (error) {
-      throw new AuthentifyError(
-        parseErrorMessage(error),
-        "GET_IDENTITY_FAILED",
-        error
-      );
+      const response = await this.client.get(`/api/auth/check-username?username=${encodeURIComponent(username)}`);
+      return response.data.data.available;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Username check failed');
     }
   }
 
   /**
-   * Get account ID by username from contract
+   * Get user profile with security details
    */
-  public async getAccountByUsername(username: string): Promise<string | null> {
+  async getProfile(): Promise<any> {
     try {
-      if (!this.contractClient) {
-        throw new AuthentifyError(
-          "Contract client not initialized",
-          "NO_CONTRACT_CLIENT"
-        );
+      if (!this.isAuthenticated()) {
+        throw new Error('User must be logged in to get profile');
       }
 
-      validateUsername(username);
-      return await this.contractClient.getAccountByUsername(username);
-    } catch (error) {
-      throw new AuthentifyError(
-        parseErrorMessage(error),
-        "GET_ACCOUNT_FAILED",
-        error
-      );
+      const response = await this.client.get('/api/sdk/profile');
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to get profile');
     }
   }
 
   /**
-   * Get contract statistics
+   * Revoke all sessions (logout from all devices)
    */
-  public async getStats(): Promise<{
-    totalUsers: number;
-    activeSessions: number;
-  }> {
+  async revokeAllSessions(): Promise<void> {
     try {
-      if (!this.contractClient) {
-        throw new AuthentifyError(
-          "Contract client not initialized",
-          "NO_CONTRACT_CLIENT"
-        );
+      if (!this.isAuthenticated()) {
+        throw new Error('User must be logged in to revoke sessions');
       }
 
-      const totalUsers = await this.contractClient.getTotalUsers();
-      const activeSessions = await this.contractClient.getActiveSessions();
+      await this.client.post('/api/sdk/sessions/revoke-all');
+      this.clearSession();
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to revoke sessions');
+    }
+  }
 
-      return { totalUsers, activeSessions };
-    } catch (error) {
-      throw new AuthentifyError(
-        parseErrorMessage(error),
-        "GET_STATS_FAILED",
-        error
-      );
+  // Private methods for session management
+  private storeSession(tokens: AuthSession): void {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('authentify_access_token', tokens.access_token);
+      localStorage.setItem('authentify_refresh_token', tokens.refresh_token);
+      localStorage.setItem('authentify_user', JSON.stringify(this.currentUser));
+    }
+  }
+
+  private loadStoredSession(): void {
+    if (typeof window !== 'undefined') {
+      const accessToken = localStorage.getItem('authentify_access_token');
+      const refreshToken = localStorage.getItem('authentify_refresh_token');
+      const userStr = localStorage.getItem('authentify_user');
+
+      if (accessToken && refreshToken && userStr) {
+        try {
+          this.currentUser = JSON.parse(userStr);
+          this.currentSession = {
+            access_token: accessToken,
+            refresh_token: refreshToken,
+            expires_in: 3600, // Default
+            token_type: 'Bearer',
+          };
+        } catch (error) {
+          this.clearSession();
+        }
+      }
+    }
+  }
+
+  private getStoredToken(): string | null {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('authentify_access_token');
+    }
+    return null;
+  }
+
+  private getStoredRefreshToken(): string | null {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('authentify_refresh_token');
+    }
+    return null;
+  }
+
+  private clearSession(): void {
+    this.currentUser = null;
+    this.currentSession = null;
+    
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('authentify_access_token');
+      localStorage.removeItem('authentify_refresh_token');
+      localStorage.removeItem('authentify_user');
     }
   }
 }
