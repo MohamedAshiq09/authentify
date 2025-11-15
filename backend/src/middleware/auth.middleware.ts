@@ -22,7 +22,7 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
     const decoded = JWTUtil.verifyAccessToken(token);
     req.user = decoded;
     next();
-  } catch (error) {
+  } catch (error: any) {
     return ResponseUtil.unauthorized(res, 'Invalid or expired token');
   }
 };
