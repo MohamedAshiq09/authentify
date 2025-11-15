@@ -1,120 +1,81 @@
-// Core SDK types
+// SDK Configuration
 export interface AuthentifyConfig {
   clientId: string;
-  clientSecret?: string;
+  clientSecret?: string; // Optional for client-side usage
   apiUrl: string;
-  contractAddress?: string;
-  wsUrl?: string;
+  timeout?: number;
 }
 
+// User Registration
 export interface UserRegistration {
-  username: string;
-  email?: string;
+  email: string;
   password: string;
-  socialIdHash?: string;
-  socialProvider?: string;
+  username?: string;
   walletAddress?: string;
 }
 
+// User Login
 export interface UserLogin {
-  username?: string;
-  email?: string;
+  email: string;
   password: string;
 }
 
-export interface IdentityInfo {
-  username: string;
-  password_hash: string;
-  social_id_hash: string;
-  social_provider: string;
-  wallet_address: string;
-  is_verified: boolean;
-  created_at: number;
-  last_login: number;
-  failed_attempts: number;
-  is_locked: boolean;
-}
-
-export interface SessionInfo {
-  account: string;
-  session_id: string;
-  created_at: number;
-  expires_at: number;
-  is_active: boolean;
-}
-
-export interface AuthSession {
-  sessionId: string;
-  accountId: string;
-  expiresAt: number;
-  isActive: boolean;
-}
-
-export interface ContractError {
-  IdentityAlreadyExists?: null;
-  UsernameAlreadyTaken?: null;
-  SocialIdAlreadyBound?: null;
-  IdentityNotFound?: null;
-  InvalidCredentials?: null;
-  Unauthorized?: null;
-  EmptyUsername?: null;
-  EmptyPasswordHash?: null;
-  EmptySocialIdHash?: null;
-  UsernameTooShort?: null;
-  UsernameTooLong?: null;
-  InvalidUsernameFormat?: null;
-  AccountLocked?: null;
-  SessionNotFound?: null;
-  SessionExpired?: null;
-  SessionAlreadyRevoked?: null;
-}
-
-export type ContractResult<T> =
-  | {
-      Ok: T;
-    }
-  | {
-      Err: ContractError;
-    };
-
-// Event types
-export interface IdentityRegisteredEvent {
-  account: string;
-  username: string;
-  social_provider: string;
-  timestamp: number;
-}
-
-export interface LoginSuccessfulEvent {
-  account: string;
-  username: string;
-  timestamp: number;
-}
-
-export interface SessionCreatedEvent {
-  account: string;
-  session_id: string;
-  expires_at: number;
-}
-
-// API response types
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-}
-
+// User Profile
 export interface UserProfile {
   id: string;
-  username: string;
-  email?: string;
-  walletAddress?: string;
-  isVerified: boolean;
-  createdAt: string;
+  email: string;
+  username?: string;
+  wallet_address?: string;
+  created_at: string;
+  updated_at: string;
+  is_verified?: boolean;
 }
 
-// Hook types for React integration
+// Authentication Session
+export interface AuthSession {
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+  token_type: string;
+}
+
+// Biometric Authentication
+export interface BiometricOptions {
+  challenge: string;
+  rp: {
+    name: string;
+    id: string;
+  };
+  user: {
+    id: string;
+    name: string;
+    displayName: string;
+  };
+  pubKeyCredParams: Array<{
+    type: string;
+    alg: number;
+  }>;
+  authenticatorSelection?: {
+    authenticatorAttachment?: string;
+    userVerification?: string;
+  };
+  timeout?: number;
+  attestation?: string;
+}
+
+export interface BiometricAssertion {
+  id: string;
+  rawId: string;
+  response: {
+    authenticatorData: string;
+    clientDataJSON: string;
+    signature: string;
+    userHandle?: string;
+  };
+  type: string;
+}
+
+// React Hook Types
 export interface UseAuthentifyReturn {
   user: UserProfile | null;
   session: AuthSession | null;
@@ -125,4 +86,52 @@ export interface UseAuthentifyReturn {
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
   error: string | null;
+}
+
+// SDK Client Management (for developers)
+export interface SDKClient {
+  id: string;
+  client_id: string;
+  app_name: string;
+  app_url?: string;
+  redirect_uris: string[];
+  created_at: string;
+}
+
+// API Response Types
+export interface APIResponse<T = any> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
+export interface APIError {
+  success: false;
+  message: string;
+  error?: string;
+}
+
+// Wallet Integration
+export interface WalletAccount {
+  address: string;
+  meta: {
+    name?: string;
+    source: string;
+  };
+}
+
+// Contract Integration
+export interface ContractIdentity {
+  username: string;
+  account_id: string;
+  created_at: number;
+  is_active: boolean;
+}
+
+// Statistics
+export interface AuthStats {
+  totalUsers: number;
+  activeUsers: number;
+  totalSessions: number;
+  biometricUsers: number;
 }
