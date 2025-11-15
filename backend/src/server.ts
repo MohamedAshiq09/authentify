@@ -16,6 +16,7 @@ import authRoutes from './routes/auth.routes';
 import sessionRoutes from './routes/session.routes';
 import contractRoutes from './routes/contract.routes';
 import sdkRoutes from './routes/sdk.routes';
+import sdkClientRoutes from './routes/sdk-client.routes';
 import biometricRoutes from './routes/biometric.routes';
 
 // Import services
@@ -61,6 +62,7 @@ app.use('/api/biometric', biometricRoutes);
 app.use('/api/session', sessionRoutes);
 app.use('/api/contract', contractRoutes);
 app.use('/api/sdk', sdkRoutes);
+app.use('/api/sdk-client', sdkClientRoutes);
 
 // 404 handler
 app.use(notFoundHandler);
