@@ -27,8 +27,19 @@ import {
   Github,
   Package,
   Terminal,
+  AlertTriangle,
+  CheckCircle,
+  Users,
+  Database,
+  Key,
+  Layers,
+  ArrowRight,
+  Star,
+  Lightbulb,
+  Target,
+  Wrench,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function SDKPage() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -71,7 +82,7 @@ const sdk = new AuthentifySDK({
   apiUrl: 'https://api.authentify.com',
   apiKey: 'your-api-key',
   wsUrl: 'ws://localhost:9944',
-  contractAddress: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
+  contractAddress: 'YOUR CONTRACT ADDRESS',
   useContract: true
 });
 
@@ -125,8 +136,13 @@ export function LoginForm() {
 }`;
 
   const sections = [
+    { id: "overview", label: "Overview", icon: Book },
     { id: "quickstart", label: "Quick Start", icon: Zap },
+    { id: "installation", label: "Installation", icon: Package },
     { id: "api", label: "API Reference", icon: Globe },
+    { id: "examples", label: "Code Examples", icon: Code },
+    { id: "features", label: "Key Features", icon: Star },
+    { id: "problem-solution", label: "Problem & Solution", icon: Target },
   ];
 
   return (
@@ -199,6 +215,177 @@ export function LoginForm() {
 
         {/* Content Area */}
         <main className="flex-1 px-4 md:px-6 py-6 w-full">
+          {/* Overview Section */}
+          <section id="overview" className="mb-12 scroll-mt-20">
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold mb-4 text-slate-100">
+                Authentify SDK Documentation
+              </h2>
+              <p className="text-lg text-slate-300 max-w-3xl leading-relaxed">
+                A comprehensive TypeScript SDK for integrating Web3 authentication into your applications. 
+                Seamlessly connect traditional OAuth providers with blockchain identity management.
+              </p>
+            </div>
+
+            {/* Hero Stats */}
+            <div className="grid md:grid-cols-4 gap-4 mb-8">
+              <Card className="bg-gradient-to-br from-pink-500/10 to-red-500/10 border-pink-500/30">
+                <CardContent className="p-4 text-center">
+                  <Package className="h-8 w-8 text-pink-400 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-slate-100">1.0.2</p>
+                  <p className="text-xs text-slate-400">Latest Version</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-br from-emerald-500/10 to-green-500/10 border-emerald-500/30">
+                <CardContent className="p-4 text-center">
+                  <Download className="h-8 w-8 text-emerald-400 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-slate-100">10K+</p>
+                  <p className="text-xs text-slate-400">Downloads</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/30">
+                <CardContent className="p-4 text-center">
+                  <Shield className="h-8 w-8 text-blue-400 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-slate-100">100%</p>
+                  <p className="text-xs text-slate-400">Type Safe</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-br from-purple-500/10 to-violet-500/10 border-purple-500/30">
+                <CardContent className="p-4 text-center">
+                  <Users className="h-8 w-8 text-purple-400 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-slate-100">MIT</p>
+                  <p className="text-xs text-slate-400">Open Source</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* What is Authentify */}
+            <Card className="bg-slate-900/50 border-slate-800/50 mb-8">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-slate-100">
+                  <Lightbulb className="h-5 w-5 text-yellow-400" />
+                  What is Authentify?
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-slate-300 leading-relaxed">
+                  Authentify is a revolutionary Web3 authentication platform that bridges the gap between traditional 
+                  web authentication and blockchain identity management. It provides developers with a simple SDK to 
+                  integrate decentralized authentication into their applications without the complexity of managing 
+                  wallets, gas fees, or blockchain interactions.
+                </p>
+                <div className="grid md:grid-cols-3 gap-4 mt-6">
+                  <div className="flex items-start gap-3">
+                    <div className="bg-pink-500/20 p-2 rounded-lg">
+                      <Shield className="h-5 w-5 text-pink-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-slate-200 mb-1">Secure by Design</h4>
+                      <p className="text-sm text-slate-400">End-to-end encryption with blockchain-backed identity</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="bg-emerald-500/20 p-2 rounded-lg">
+                      <Zap className="h-5 w-5 text-emerald-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-slate-200 mb-1">Developer Friendly</h4>
+                      <p className="text-sm text-slate-400">Simple API with comprehensive TypeScript support</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="bg-blue-500/20 p-2 rounded-lg">
+                      <Globe className="h-5 w-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-slate-200 mb-1">Universal Integration</h4>
+                      <p className="text-sm text-slate-400">Works with any web framework or mobile app</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+
+          {/* Installation Section */}
+          <section id="installation" className="mb-12 scroll-mt-20">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold mb-2 text-slate-100">
+                Installation
+              </h2>
+              <p className="text-sm text-slate-400 max-w-2xl">
+                Get started with Authentify SDK in seconds
+              </p>
+            </div>
+
+            <Card className="bg-slate-900/50 border-slate-800/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-pink-300">
+                  <Package className="h-5 w-5 text-pink-500" />
+                  Package Installation
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-slate-300">npm</p>
+                    <div className="relative bg-slate-950/50 rounded-lg">
+                      <button
+                        onClick={() => copyToClipboard("npm install authentify-sdk", "npm")}
+                        className="absolute top-2 right-2 p-1 hover:bg-slate-700 rounded transition-colors"
+                      >
+                        {copiedCode === "npm" ? (
+                          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                        ) : (
+                          <Copy className="h-4 w-4 text-slate-400" />
+                        )}
+                      </button>
+                      <pre className="p-3 text-sm text-slate-300 font-mono">
+                        npm install authentify-sdk
+                      </pre>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-slate-300">yarn</p>
+                    <div className="relative bg-slate-950/50 rounded-lg">
+                      <button
+                        onClick={() => copyToClipboard("yarn add authentify-sdk", "yarn")}
+                        className="absolute top-2 right-2 p-1 hover:bg-slate-700 rounded transition-colors"
+                      >
+                        {copiedCode === "yarn" ? (
+                          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                        ) : (
+                          <Copy className="h-4 w-4 text-slate-400" />
+                        )}
+                      </button>
+                      <pre className="p-3 text-sm text-slate-300 font-mono">
+                        yarn add authentify-sdk
+                      </pre>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-slate-300">pnpm</p>
+                    <div className="relative bg-slate-950/50 rounded-lg">
+                      <button
+                        onClick={() => copyToClipboard("pnpm add authentify-sdk", "pnpm")}
+                        className="absolute top-2 right-2 p-1 hover:bg-slate-700 rounded transition-colors"
+                      >
+                        {copiedCode === "pnpm" ? (
+                          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                        ) : (
+                          <Copy className="h-4 w-4 text-slate-400" />
+                        )}
+                      </button>
+                      <pre className="p-3 text-sm text-slate-300 font-mono">
+                        pnpm add authentify-sdk
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+
           {/* Quick Start Section */}
           <section id="quickstart" className="mb-12 scroll-mt-20">
             <div className="mb-6">
