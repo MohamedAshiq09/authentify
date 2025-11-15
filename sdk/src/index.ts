@@ -43,3 +43,7 @@ export {
   useBiometric,
   AuthentifyProvider,
 } from './react/hooks';
+
+// UI components (optional, Tailwind-friendly)
+export { LoginCard } from './react/components/LoginCard';
+export { RegisterCard } from './react/components/RegisterCard';

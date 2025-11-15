@@ -1,4 +1,46 @@
-import { AuthentifyConfig } from './types';
+import { AuthentifyConfig, ContractResult } from './types';
+import bcrypt from 'bcryptjs';
+
+// Custom error class used throughout the SDK
+export class AuthentifyError extends Error {
+  public code: string;
+  public original?: any;
+  constructor(message: string, code: string, original?: any) {
+    super(message);
+    this.code = code;
+    this.original = original;
+  }
+}
+
+// ----------- Identity & Credential Helpers -----------
+export async function hashPassword(password: string, saltRounds: number = 10): Promise<string> {
+  return bcrypt.hash(password, saltRounds);
+}
+
+export function generateSessionId(): string {
+  return `sess_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+export function validateUsername(username: string): void {
+  if (!username) throw new AuthentifyError('Username required', 'INVALID_USERNAME');
+  if (username.length < 3) throw new AuthentifyError('Username too short', 'INVALID_USERNAME');
+  if (username.length > 32) throw new AuthentifyError('Username too long', 'INVALID_USERNAME');
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) throw new AuthentifyError('Invalid username format', 'INVALID_USERNAME');
+}
+
+export function parseErrorMessage(error: any): string {
+  if (!error) return 'Unknown error';
+  if (error instanceof AuthentifyError) return error.message;
+  if (typeof error === 'string') return error;
+  return error.message || 'Unknown error';
+}
+
+// Parse a ContractResult<T> structure
+export function parseContractResult<T>(result: ContractResult<T>): T {
+  if ((result as any).Ok !== undefined) return (result as any).Ok as T;
+  const err = (result as any).Err;
+  throw new AuthentifyError('Contract error: ' + JSON.stringify(err), 'CONTRACT_ERROR', err);
+}
 
 /**
  * Validate SDK configuration
@@ -98,6 +140,22 @@ export function formatError(error: any): string {
     return error.message;
   }
   return 'An unexpected error occurred';
+}
+
+// ----------- Safe Storage (SSR guard) -----------
+export function safeSetItem(key: string, value: string): void {
+  if (typeof window === 'undefined') return;
+  try { localStorage.setItem(key, value); } catch { /* ignore */ }
+}
+
+export function safeGetItem(key: string): string | null {
+  if (typeof window === 'undefined') return null;
+  try { return localStorage.getItem(key); } catch { return null; }
+}
+
+export function safeRemoveItem(key: string): void {
+  if (typeof window === 'undefined') return;
+  try { localStorage.removeItem(key); } catch { /* ignore */ }
 }
 
 /**

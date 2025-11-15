@@ -4,6 +4,8 @@ export const DEFAULT_CONFIG = {
   USER_STORAGE_KEY: "authentify_user",
   CONTRACT_DEFAULT_GAS: "1000000000000",
   CONTRACT_DEFAULT_VALUE: 0,
+  GAS_MULTIPLIER_NUM: 13, // 1.3x multiplier for safe gas
+  GAS_MULTIPLIER_DEN: 10,
 };
 
 export const ENDPOINTS = {
