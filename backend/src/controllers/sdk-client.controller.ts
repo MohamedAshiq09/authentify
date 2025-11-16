@@ -211,6 +211,25 @@ export class SDKClientController {
   }
 
   /**
+   * Get comprehensive analytics for all user's clients
+   */
+  static async getUserAnalytics(req: AuthenticatedRequest, res: Response) {
+    try {
+      if (!req.user) {
+        return ResponseUtil.unauthorized(res);
+      }
+
+      const analytics = await SDKService.getUserAnalytics(req.user.userId);
+
+      return ResponseUtil.success(res, analytics);
+
+    } catch (error: any) {
+      console.error('Get user analytics error:', error);
+      return ResponseUtil.error(res, error.message, 400);
+    }
+  }
+
+  /**
    * Verify client credentials (used by SDK)
    */
   static async verifyClient(req: Request, res: Response) {

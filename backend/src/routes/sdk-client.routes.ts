@@ -58,6 +58,12 @@ router.get('/clients',
   SDKClientController.getClients
 );
 
+router.get('/analytics',
+  authenticateToken,
+  generalLimiter,
+  SDKClientController.getUserAnalytics
+);
+
 router.get('/clients/:client_id',
   authenticateToken,
   generalLimiter,
