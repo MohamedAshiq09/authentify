@@ -68,6 +68,16 @@ router.get('/clients/:client_id',
   SDKClientController.getClientById
 );
 
+router.get('/clients/:client_id/stats',
+  authenticateToken,
+  generalLimiter,
+  [
+    param('client_id').notEmpty().withMessage('Client ID is required'),
+    handleValidationErrors,
+  ],
+  SDKClientController.getClientStats
+);
+
 router.put('/clients/:client_id',
   authenticateToken,
   generalLimiter,

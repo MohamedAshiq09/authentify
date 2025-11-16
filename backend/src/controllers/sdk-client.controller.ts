@@ -191,6 +191,26 @@ export class SDKClientController {
   }
 
   /**
+   * Get user statistics for a client
+   */
+  static async getClientStats(req: AuthenticatedRequest, res: Response) {
+    try {
+      if (!req.user) {
+        return ResponseUtil.unauthorized(res);
+      }
+
+      const { client_id } = req.params;
+      const stats = await SDKService.getClientUserStats(client_id, req.user.userId);
+
+      return ResponseUtil.success(res, stats);
+
+    } catch (error: any) {
+      console.error('Get client stats error:', error);
+      return ResponseUtil.error(res, error.message, 400);
+    }
+  }
+
+  /**
    * Verify client credentials (used by SDK)
    */
   static async verifyClient(req: Request, res: Response) {
