@@ -6,17 +6,21 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Shield, 
-  Fingerprint, 
-  Key, 
+import {
+  Shield,
+  Fingerprint,
+  Key,
   LogOut,
   CheckCircle2,
   AlertCircle,
   Plus,
   Smartphone,
   Lock,
-  Users
+  Users,
+  Database,
+  Activity,
+  BarChart3,
+  TrendingUp
 } from 'lucide-react';
 import { BiometricAuth } from '@/components/auth/biometric-auth';
 import { UserSidebar } from '@/components/user/sidebar';
@@ -64,7 +68,7 @@ export default function DashboardPage() {
     try {
       setIsLoading(true);
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
-      
+
       // Load user profile
       const profileResponse = await fetch(`${API_URL}/auth/profile`, {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -100,7 +104,7 @@ export default function DashboardPage() {
         if (clientsResponse.ok) {
           const clientsData = await clientsResponse.json();
           const clients = clientsData.data?.clients || [];
-          
+
           if (clients.length > 0) {
             // Get stats for the first client (or you could aggregate all clients)
             const firstClient = clients[0];
@@ -205,44 +209,10 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Metrics */}
-      <div className="grid grid-cols-2 gap-8 mb-8">
-        <div>
-          <div className="text-sm text-gray-400 mb-1">Bandwidth</div>
-          <div className="text-4xl font-bold">1.19 <span className="text-lg text-gray-400">GB</span></div>
-        </div>
-        <div className="text-right">
-          <div className="text-sm text-gray-400 mb-1">Requests</div>
-          <div className="text-4xl font-bold">2K</div>
-        </div>
-      </div>
 
-      {/* Chart */}
-      <div className="h-48 flex items-end gap-1 mb-8">
-        {Array.from({ length: 50 }).map((_, i) => (
-          <div
-            key={i}
-            className="flex-1 bg-gradient-to-t from-pink-500 to-pink-400 rounded-t"
-            style={{
-              height: `${Math.random() * 100}%`,
-              opacity: 0.6 + Math.random() * 0.4,
-            }}
-          />
-        ))}
-      </div>
 
       {/* Bottom Stats */}
-      <div className="grid grid-cols-3 gap-6">
-        <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
-          <div className="text-xs text-gray-400 mb-1 flex items-center gap-1">
-            <Users className="h-3 w-3" />
-            TOTAL USERS
-          </div>
-          <div className="text-2xl font-bold text-blue-400">
-            {userStats?.total_users ?? 0}
-          </div>
-          <div className="text-xs text-gray-400">Authenticated Users</div>
-        </div>
+      <div className="grid grid-cols-2 gap-6">
         <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
           <div className="text-xs text-gray-400 mb-1">DATABASES</div>
           <div className="text-2xl font-bold">4</div>
@@ -257,9 +227,9 @@ export default function DashboardPage() {
 
       {/* Logout Button */}
       <div className="mt-8">
-        <Button 
-          onClick={handleLogout} 
-          variant="outline" 
+        <Button
+          onClick={handleLogout}
+          variant="outline"
           className="border-gray-600 text-gray-400 hover:bg-gray-800 hover:text-white"
         >
           <LogOut className="h-4 w-4 mr-2" />
@@ -289,7 +259,7 @@ export default function DashboardPage() {
             </p>
           </div>
           {biometricCredentials.length === 0 && (
-            <Button 
+            <Button
               onClick={() => setShowBiometricSetup(true)}
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90"
             >
@@ -308,7 +278,7 @@ export default function DashboardPage() {
               Biometric Authentication Not Enabled
             </h3>
             <p className="text-gray-400 mb-4 max-w-md mx-auto">
-              Add an extra layer of security to your account with biometric authentication. 
+              Add an extra layer of security to your account with biometric authentication.
               Use your fingerprint, face, or security key to login quickly and securely.
             </p>
             <div className="flex flex-wrap justify-center gap-2 mb-6">
@@ -326,7 +296,7 @@ export default function DashboardPage() {
               </Badge>
             </div>
             {!showBiometricSetup && (
-              <Button 
+              <Button
                 onClick={() => setShowBiometricSetup(true)}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90"
               >
@@ -343,7 +313,7 @@ export default function DashboardPage() {
                 Biometric authentication is enabled
               </span>
             </div>
-            
+
             {/* Show biometric setup for adding more methods */}
             {showBiometricSetup && (
               <div className="border-2 border-dashed border-gray-600 rounded-lg p-4">
@@ -359,9 +329,9 @@ export default function DashboardPage() {
                 />
               </div>
             )}
-            
+
             {!showBiometricSetup && (
-              <Button 
+              <Button
                 onClick={() => setShowBiometricSetup(true)}
                 variant="outline"
                 className="mb-4 border-gray-600 text-gray-400 hover:bg-gray-800 hover:text-white"
@@ -385,8 +355,8 @@ export default function DashboardPage() {
               onRegisterSuccess={handleBiometricSuccess}
             />
             <div className="mt-4 text-center">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 onClick={() => setShowBiometricSetup(false)}
                 className="text-gray-400 hover:text-white"
               >
@@ -414,9 +384,9 @@ export default function DashboardPage() {
 
       {/* Logout Button */}
       <div className="mt-8">
-        <Button 
-          onClick={handleLogout} 
-          variant="outline" 
+        <Button
+          onClick={handleLogout}
+          variant="outline"
           className="border-gray-600 text-gray-400 hover:bg-gray-800 hover:text-white"
         >
           <LogOut className="h-4 w-4 mr-2" />
@@ -437,6 +407,115 @@ export default function DashboardPage() {
     </div>
   );
 
+  const renderDatabaseContent = () => (
+    <div className="flex-1 p-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold mb-1">Database Analytics</h1>
+        <div className="text-sm text-gray-400">User statistics and analytics for your applications</div>
+      </div>
+
+      {/* Main Metrics */}
+      <div className="grid grid-cols-2 gap-8 mb-8">
+        <div>
+          <div className="text-sm text-gray-400 mb-1">Bandwidth</div>
+          <div className="text-4xl font-bold">1.19 <span className="text-lg text-gray-400">GB</span></div>
+        </div>
+        <div className="text-right">
+          <div className="text-sm text-gray-400 mb-1">Requests</div>
+          <div className="text-4xl font-bold">2K</div>
+        </div>
+      </div>
+
+      {/* Chart */}
+      <div className="mb-8">
+        <h3 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-pink-400" />
+          Daily Analytics
+        </h3>
+        <div className="h-48 flex items-end gap-1 bg-gray-900 border border-gray-800 rounded-lg p-4">
+          {Array.from({ length: 30 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex-1 bg-gradient-to-t from-pink-500 to-pink-400 rounded-t"
+              style={{
+                height: `${Math.random() * 100}%`,
+                opacity: 0.6 + Math.random() * 0.4,
+              }}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* User Statistics */}
+      <div className="mb-8">
+        <h3 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
+          <Users className="h-5 w-5 text-blue-400" />
+          User Statistics
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
+            <div className="text-xs text-gray-400 mb-1 flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              TOTAL USERS
+            </div>
+            <div className="text-2xl font-bold text-blue-400">
+              {userStats?.total_users ?? 0}
+            </div>
+            <div className="text-xs text-gray-400">Authenticated Users</div>
+          </div>
+          <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
+            <div className="text-xs text-gray-400 mb-1 flex items-center gap-1">
+              <Activity className="h-3 w-3" />
+              ACTIVE TODAY
+            </div>
+            <div className="text-2xl font-bold text-green-400">
+              {Math.floor((userStats?.total_users ?? 0) * 0.3)}
+            </div>
+            <div className="text-xs text-gray-400">Active Users</div>
+          </div>
+          <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
+            <div className="text-xs text-gray-400 mb-1 flex items-center gap-1">
+              <TrendingUp className="h-3 w-3" />
+              GROWTH RATE
+            </div>
+            <div className="text-2xl font-bold text-purple-400">+12%</div>
+            <div className="text-xs text-gray-400">This Month</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Database Stats */}
+      <div className="mb-8">
+        <h3 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
+          <Database className="h-5 w-5 text-orange-400" />
+          Database Statistics
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
+            <div className="text-xs text-gray-400 mb-1">DATABASES</div>
+            <div className="text-2xl font-bold">4</div>
+            <div className="text-xs text-gray-400">Active Databases</div>
+          </div>
+          <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
+            <div className="text-xs text-gray-400 mb-1">STORAGE</div>
+            <div className="text-2xl font-bold">8.0 <span className="text-sm">MB</span></div>
+            <div className="text-xs text-gray-400">Used Storage</div>
+          </div>
+          <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
+            <div className="text-xs text-gray-400 mb-1">QUERIES</div>
+            <div className="text-2xl font-bold">1.2K</div>
+            <div className="text-xs text-gray-400">Today</div>
+          </div>
+          <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
+            <div className="text-xs text-gray-400 mb-1">RESPONSE TIME</div>
+            <div className="text-2xl font-bold">45 <span className="text-sm">ms</span></div>
+            <div className="text-xs text-gray-400">Average</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderContent = () => {
     switch (activeSection) {
       case 'overview':
@@ -445,6 +524,8 @@ export default function DashboardPage() {
         return renderAuthContent();
       case 'api':
         return renderAPIContent();
+      case 'databases':
+        return renderDatabaseContent();
       default:
         return (
           <div className="flex-1 p-6">
@@ -471,9 +552,9 @@ export default function DashboardPage() {
 
       <div className="flex">
         {/* Sidebar */}
-        <UserSidebar 
-          activeSection={activeSection} 
-          onSectionChange={setActiveSection} 
+        <UserSidebar
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
         />
 
         {/* Main Content */}
