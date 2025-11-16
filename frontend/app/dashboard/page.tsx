@@ -20,7 +20,12 @@ import {
   Database,
   Activity,
   BarChart3,
-  TrendingUp
+  TrendingUp,
+  Globe,
+  Copy,
+  Eye,
+  EyeOff,
+  ExternalLink
 } from 'lucide-react';
 import { BiometricAuth } from '@/components/auth/biometric-auth';
 import { UserSidebar } from '@/components/user/sidebar';
@@ -64,6 +69,9 @@ export default function DashboardPage() {
     avg_response_time: number;
     daily_stats: Array<{ date: string; users: number; requests: number }>;
   } | null>(null);
+  const [oauthEnabled, setOauthEnabled] = useState(false);
+  const [showClientSecret, setShowClientSecret] = useState(false);
+  const [clients, setClients] = useState<any[]>([]);
 
   useEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
@@ -119,6 +127,20 @@ export default function DashboardPage() {
         }
       } catch (analyticsError) {
         console.warn('Could not load analytics:', analyticsError);
+      }
+
+      // Load SDK clients
+      try {
+        const clientsResponse = await fetch(`${API_URL}/sdk-client/clients`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        if (clientsResponse.ok) {
+          const clientsData = await clientsResponse.json();
+          setClients(clientsData.data?.clients || []);
+        }
+      } catch (clientsError) {
+        console.warn('Could not load clients:', clientsError);
       }
 
     } catch (error: any) {
@@ -531,6 +553,207 @@ export default function DashboardPage() {
     </div>
   );
 
+  const renderDeveloperContent = () => (
+    <div className="flex-1 p-6">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold mb-2">Developer Console</h1>
+        <div className="text-sm text-gray-400 mb-6">Manage your API credentials and integrations</div>
+
+        {/* API Overview Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <div className="text-2xl font-bold text-white">{analytics?.databases_count ?? 0}</div>
+            <div className="text-sm text-gray-400">Active APIs</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <div className="text-2xl font-bold text-white">{analytics?.queries_today ? (analytics.queries_today >= 1000 ? `${(analytics.queries_today / 1000).toFixed(1)}K` : analytics.queries_today) : '0'}</div>
+            <div className="text-sm text-gray-400">Requests Today</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <div className="text-2xl font-bold text-white">99.9%</div>
+            <div className="text-sm text-gray-400">Uptime</div>
+          </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <div className="text-2xl font-bold text-white">{analytics?.avg_response_time ?? 0}ms</div>
+            <div className="text-sm text-gray-400">Avg Response</div>
+          </div>
+        </div>
+      </div>
+
+      {/* API Credentials */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-white">API Credentials</h3>
+          <Button
+            size="sm"
+            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Create New API
+          </Button>
+        </div>
+
+        {clients.length > 0 ? (
+          <div className="space-y-4">
+            {clients.map((client, index) => (
+              <div key={client.id} className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+                <div className="p-4 border-b border-gray-800">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium text-white">{client.app_name}</h4>
+                      <p className="text-sm text-gray-400">Created on {new Date(client.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <Badge className="bg-gray-800 text-white border-gray-700">Active</Badge>
+                  </div>
+                </div>
+
+                <div className="p-4 space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-2">CLIENT ID</label>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded text-sm font-mono text-white">
+                          {client.client_id}
+                        </code>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-gray-400 hover:text-white"
+                          onClick={() => navigator.clipboard.writeText(client.client_id)}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-2">CLIENT SECRET</label>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded text-sm font-mono text-white">
+                          {showClientSecret ? '••••••••••••••••••••••••••••••••' : '••••••••••••••••••••••••••••••••'}
+                        </code>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-gray-400 hover:text-white"
+                          onClick={() => setShowClientSecret(!showClientSecret)}
+                        >
+                          {showClientSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-gray-400 hover:text-white"
+                          onClick={() => navigator.clipboard.writeText('Hidden for security')}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-2">AUTHORIZED REDIRECT URIS</label>
+                    <div className="space-y-2">
+                      {client.redirect_uris?.map((uri: string, uriIndex: number) => (
+                        <div key={uriIndex} className="flex items-center gap-2">
+                          <code className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded text-sm text-white">
+                            {uri}
+                          </code>
+                          <Button size="sm" variant="ghost" className="text-gray-400 hover:text-white">
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="px-4 py-3 bg-gray-800/50 border-t border-gray-800 flex justify-end gap-2">
+                  <Button size="sm" variant="outline" className="border-gray-600 text-gray-400 hover:bg-gray-800 hover:text-white">
+                    Regenerate Secret
+                  </Button>
+                  <Button size="sm" variant="outline" className="border-gray-600 text-gray-400 hover:bg-gray-800 hover:text-white">
+                    Edit
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-8 text-center">
+            <Key className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h4 className="font-medium text-white mb-2">No API Clients</h4>
+            <p className="text-gray-400 mb-4">Create your first API client to get started</p>
+            <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90">
+              <Plus className="h-4 w-4 mr-2" />
+              Create API Client
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* OAuth Integration */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-white">OAuth Integration</h3>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-400">{oauthEnabled ? 'Enabled' : 'Disabled'}</span>
+            <button
+              onClick={() => setOauthEnabled(!oauthEnabled)}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${oauthEnabled ? 'bg-gray-700' : 'bg-gray-600'
+                }`}
+            >
+              <span
+                className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${oauthEnabled ? 'translate-x-5' : 'translate-x-1'
+                  }`}
+              />
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          {oauthEnabled ? (
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
+                <div className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center">
+                  <Globe className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <div className="font-medium text-white text-sm">Google</div>
+                  <div className="text-xs text-white">Active</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
+                <div className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center">
+                  <Globe className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <div className="font-medium text-white text-sm">GitHub</div>
+                  <div className="text-xs text-white">Active</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
+                <div className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center">
+                  <Globe className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <div className="font-medium text-white text-sm">Twitter</div>
+                  <div className="text-xs text-white">Active</div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Lock className="h-8 w-8 text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-400 text-sm">Enable OAuth to allow social authentication</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   const renderContent = () => {
     switch (activeSection) {
       case 'overview':
@@ -541,6 +764,8 @@ export default function DashboardPage() {
         return renderAPIContent();
       case 'databases':
         return renderDatabaseContent();
+      case 'developer':
+        return renderDeveloperContent();
       default:
         return (
           <div className="flex-1 p-6">

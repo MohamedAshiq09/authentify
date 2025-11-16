@@ -21,9 +21,7 @@ export function UserSidebar({ activeSection, onSectionChange }: SidebarProps) {
     { id: 'auth', label: 'Auth', icon: Shield },
     { id: 'api', label: 'API', icon: Key },
     { id: 'databases', label: 'Databases', icon: Database },
-    { id: 'functions', label: 'Functions', icon: Zap },
-    { id: 'storage', label: 'Storage', icon: Database },
-    { id: 'messaging', label: 'Messaging', icon: Users },
+    { id: 'developer', label: 'Developer Settings', icon: Users },
   ];
 
   return (
