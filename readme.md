@@ -56,8 +56,7 @@ Authentify uses a three-layer architecture:
 authentify/
 ├── contract/          # ink! Smart Contract
 ├── backend/          # Node.js Backend API
-├── frontend/         # Next.js Frontend Application
-└── sdk/             # NPM SDK Package (optional)
+└── frontend/         # Next.js Frontend Application
 ```
 
 ---
@@ -149,8 +148,6 @@ authentify/
 - Polkadot.js browser extension (for testing)
 
 ### Installation
-
-#### 1. Clone the Repository
 ```bash
 git clone https://github.com/yourusername/authentify.git
 cd authentify
@@ -163,11 +160,7 @@ cd authentify
 ### Installation
 ```bash
 cd contract
-
-# Install dependencies (if any)
 cargo build
-
-# Compile the contract
 cargo contract build
 ```
 
@@ -175,33 +168,15 @@ cargo contract build
 
 Create `.env` file in `contract/` directory:
 ```env
-# Contract Configuration
 CONTRACT_ADDRESS=
 NODE_URL=ws://127.0.0.1:9944
 ADMIN_SEED=//Alice
-
-# Deployment Settings
 MAX_FAILED_ATTEMPTS=5
 LOCKOUT_DURATION_MS=900000
 ```
 
-### Deployment
-
-**Option 1: Deploy to Local Node**
+### Deployment to Pop Network Paseo Testnet
 ```bash
-# Start local substrate node (in separate terminal)
-substrate-contracts-node --dev
-
-# Deploy contract
-cargo contract instantiate --constructor new \
-  --args "Alice" \
-  --suri //Alice \
-  --skip-confirm
-```
-
-**Option 2: Deploy to Pop Network Paseo Testnet**
-```bash
-# Deploy to testnet
 cargo contract instantiate --constructor new \
   --args "Alice" \
   --url wss://rpc1.paseo.popnetwork.xyz \
@@ -211,12 +186,6 @@ cargo contract instantiate --constructor new \
 
 **Note**: Save the deployed `CONTRACT_ADDRESS` for backend configuration.
 
-### Testing
-```bash
-# Run contract tests
-cargo test
-```
-
 ---
 
 ## 🔌 Backend Setup
@@ -224,8 +193,6 @@ cargo test
 ### Installation
 ```bash
 cd backend
-
-# Install dependencies
 npm install
 ```
 
@@ -254,11 +221,9 @@ GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 GITHUB_CLIENT_ID=your_github_client_id
 GITHUB_CLIENT_SECRET=your_github_client_secret
-TWITTER_CLIENT_ID=your_twitter_client_id
-TWITTER_CLIENT_SECRET=your_twitter_client_secret
 
-# Polkadot Contract Configuration - Pop Network Paseo Testnet
-CONTRACT_ADDRESS=5ELirgt7r8BS2pMVHiBhgp59T5RMump25yzVorQucifPkNxF
+# Polkadot Contract Configuration
+CONTRACT_ADDRESS=your_deployed_contract_address
 SUBSTRATE_WS_ENDPOINT=wss://rpc1.paseo.popnetwork.xyz
 SERVICE_ACCOUNT_SEED=//Alice
 
@@ -267,64 +232,17 @@ RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX_REQUESTS=100
 ```
 
-### Setup Supabase Database
-
-1. Create a Supabase account at https://supabase.com
-2. Create a new project
-3. Run the following SQL in Supabase SQL Editor:
-```sql
--- Users table
-CREATE TABLE users (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  username TEXT UNIQUE NOT NULL,
-  wallet_address TEXT UNIQUE NOT NULL,
-  email TEXT,
-  oauth_provider TEXT,
-  oauth_id TEXT,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- Sessions table
-CREATE TABLE sessions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  refresh_token TEXT NOT NULL,
-  expires_at TIMESTAMP NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
--- Developer credentials table (for SDK users)
-CREATE TABLE developer_credentials (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  client_id TEXT UNIQUE NOT NULL,
-  client_secret TEXT NOT NULL,
-  app_name TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-```
-
 ### Copy Contract Metadata
 ```bash
-# Copy contract metadata from contract build
 cp ../contract/target/ink/authentify.json ./contract-metadata.json
 ```
 
 ### Running the Backend
 ```bash
-# Development mode with auto-reload
 npm run dev
-
-# Production mode
-npm start
 ```
 
 Backend will start on `http://localhost:5000`
-
-### API Documentation
-
-Once running, access API documentation at:
-- Swagger UI: `http://localhost:5000/api-docs`
 
 ---
 
@@ -333,8 +251,6 @@ Once running, access API documentation at:
 ### Installation
 ```bash
 cd frontend
-
-# Install dependencies
 npm install
 ```
 
@@ -342,15 +258,13 @@ npm install
 
 Create `.env.local` file in `frontend/` directory:
 ```env
-# Authentify Frontend Environment Variables
-
 # Backend API Configuration
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
 NEXT_PUBLIC_BACKEND_URL=http://localhost:5000
 
 # Polkadot Configuration
 NEXT_PUBLIC_WS_PROVIDER=wss://rpc1.paseo.popnetwork.xyz
-NEXT_PUBLIC_CONTRACT_ADDRESS=5ELirgt7r8BS2pMVHiBhgp59T5RMump25yzVorQucifPkNxF
+NEXT_PUBLIC_CONTRACT_ADDRESS=your_deployed_contract_address
 
 # App Configuration
 NEXT_PUBLIC_APP_NAME=Authentify
@@ -366,20 +280,12 @@ NEXT_PUBLIC_DEBUG=true
 
 ### Copy Contract Metadata
 ```bash
-# Copy contract metadata from contract build
 cp ../contract/target/ink/authentify.json ./public/contract-metadata.json
 ```
 
 ### Running the Frontend
 ```bash
-# Development mode
 npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
 ```
 
 Frontend will start on `http://localhost:3000`
@@ -391,51 +297,33 @@ Frontend will start on `http://localhost:3000`
 ### Registration Flow
 ```
 1. User (Frontend) → Clicks "Sign Up"
-                   ↓
 2. Frontend → Requests wallet connection (MetaMask/Polkadot.js)
-                   ↓
 3. User → Approves wallet connection
-                   ↓
 4. Frontend → Sends wallet address + username + password to Backend
-                   ↓
 5. Backend → Hashes password → Calls smart contract register_user()
-                   ↓
 6. Smart Contract → Stores wallet address + password hash on-chain
-                   ↓
 7. Backend → Creates user in Supabase → Generates JWT token
-                   ↓
 8. Frontend → Receives JWT → User is logged in
 ```
 
 ### Login Flow
 ```
 1. User (Frontend) → Enters username + password
-                   ↓
 2. Frontend → Sends credentials to Backend
-                   ↓
 3. Backend → Hashes password → Calls smart contract verify_password()
-                   ↓
 4. Smart Contract → Verifies credentials on-chain → Returns success/failure
-                   ↓
 5. Backend → Generates JWT token → Returns to Frontend
-                   ↓
 6. Frontend → Stores JWT → User is logged in
 ```
 
 ### Transaction Signing Flow
 ```
 1. User (Frontend) → Clicks "Mint NFT" or "Swap Token"
-                   ↓
 2. Frontend → Checks JWT validity with Backend
-                   ↓
 3. Backend → Validates JWT → Returns success
-                   ↓
 4. Frontend → Shows wallet popup (MetaMask/Polkadot.js)
-                   ↓
 5. User → Signs transaction with wallet
-                   ↓
 6. Smart Contract → Executes transaction on blockchain
-                   ↓
 7. Frontend → Transaction complete → Wallet disappears
 ```
 
@@ -452,7 +340,6 @@ npm install @authentify/sdk
 ```typescript
 import { AuthProvider, useAuth } from '@authentify/sdk';
 
-// Wrap your app with AuthProvider
 function App() {
   return (
     <AuthProvider
@@ -465,51 +352,16 @@ function App() {
   );
 }
 
-// Use authentication in your components
 function YourComponent() {
   const { user, login, logout, isAuthenticated } = useAuth();
-
-  const handleLogin = async () => {
-    await login('username', 'password');
-  };
 
   return (
     <div>
       {isAuthenticated ? (
-        <>
-          <p>Welcome, {user.username}!</p>
-          <button onClick={logout}>Logout</button>
-        </>
+        <p>Welcome, {user.username}!</p>
       ) : (
-        <button onClick={handleLogin}>Login</button>
+        <button onClick={() => login('username', 'password')}>Login</button>
       )}
-    </div>
-  );
-}
-```
-
-### Advanced Usage
-```typescript
-import { useWallet, useTransaction } from '@authentify/sdk';
-
-function TransactionComponent() {
-  const { signTransaction } = useTransaction();
-  const { walletAddress } = useWallet();
-
-  const handleMintNFT = async () => {
-    // Wallet will automatically appear for signing
-    const result = await signTransaction({
-      type: 'mint',
-      data: { nftId: 123 }
-    });
-    
-    console.log('Transaction hash:', result.hash);
-  };
-
-  return (
-    <div>
-      <p>Connected: {walletAddress}</p>
-      <button onClick={handleMintNFT}>Mint NFT</button>
     </div>
   );
 }
@@ -518,59 +370,15 @@ function TransactionComponent() {
 ---
 
 ## 🧪 Testing
-
-### Backend Tests
 ```bash
-cd backend
-npm test
-```
+# Backend tests
+cd backend && npm test
 
-### Frontend Tests
-```bash
-cd frontend
-npm test
-```
+# Frontend tests
+cd frontend && npm test
 
-### Contract Tests
-```bash
-cd contract
-cargo test
-```
-
----
-
-## 🌐 Deployment
-
-### Deploy Smart Contract to Mainnet
-```bash
-cd contract
-cargo contract instantiate --constructor new \
-  --args "Admin" \
-  --url wss://rpc.polkadot.io \
-  --suri "your-mainnet-seed-phrase" \
-  --skip-confirm
-```
-
-### Deploy Backend
-
-**Using Vercel/Railway/Heroku:**
-
-1. Set environment variables in platform dashboard
-2. Deploy from GitHub repository
-3. Update `FRONTEND_URL` to production URL
-
-### Deploy Frontend
-
-**Using Vercel:**
-```bash
-cd frontend
-vercel --prod
-```
-
-**Using Netlify:**
-```bash
-cd frontend
-netlify deploy --prod
+# Contract tests
+cd contract && cargo test
 ```
 
 ---
@@ -584,7 +392,6 @@ netlify deploy --prod
 - Use HTTPS in production
 - Validate all user inputs on backend
 - Store password hashes on-chain, never plain passwords
-- Implement proper CORS configuration
 
 ---
 
@@ -600,55 +407,6 @@ netlify deploy --prod
 | **Styling** | Tailwind CSS | UI design |
 | **Authentication** | JWT + OAuth 2.0 | Session management |
 | **Wallet** | Polkadot.js + MetaMask | Blockchain interaction |
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- Built for Polkadot Hackathon 2024
-- Powered by Pop Network Paseo Testnet
-- Thanks to the Polkadot and ink! communities
-
----
-
-## 📞 Contact & Support
-
-- **Documentation**: [docs.authentify.io](https://docs.authentify.io)
-- **Discord**: [Join our community](https://discord.gg/authentify)
-- **Twitter**: [@authentify](https://twitter.com/authentify)
-- **Email**: support@authentify.io
-
----
-
-## 🎯 Roadmap
-
-- [x] Core authentication system
-- [x] Smart contract deployment
-- [x] OAuth integration
-- [x] Production-ready SDK
-- [ ] Biometric authentication
-- [ ] Cross-chain identity management
-- [ ] Mainnet deployment
-- [ ] Developer portal and dashboard
-- [ ] Enterprise partnership program
 
 ---
 
