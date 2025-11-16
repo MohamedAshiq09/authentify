@@ -1,6 +1,6 @@
 {
   "name": "authentify-sdk",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Web3 Authentication SDK for seamless user onboarding with blockchain identity",
   "type": "module",
   "main": "dist/index.js",
@@ -41,15 +41,23 @@
   },
   "homepage": "https://github.com/yourusername/authentify-sdk#readme",
   "dependencies": {
-    "axios": "^1.6.0"
+    "@polkadot/api": "^10.11.1",
+    "@polkadot/api-contract": "^10.11.1",
+    "@polkadot/extension-dapp": "^0.47.3",
+    "@polkadot/types": "^10.11.1",
+    "axios": "^1.6.0",
+    "bcryptjs": "^2.4.3"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.5",
+    "@types/bcryptjs": "^2.4.6",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.10.5",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
     "eslint": "^8.56.0",

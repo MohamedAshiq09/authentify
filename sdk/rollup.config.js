@@ -4,7 +4,17 @@ import commonjs from "@rollup/plugin-commonjs";
 import json from "@rollup/plugin-json";
 import dts from "rollup-plugin-dts";
 
-const external = ['axios', 'react', 'react-dom'];
+const external = [
+  "axios",
+  "react",
+  "react-dom",
+  "@polkadot/api",
+  "@polkadot/api-contract",
+  "@polkadot/extension-dapp",
+  "@polkadot/keyring",
+  "@polkadot/types",
+  "bcryptjs",
+];
 
 export default [
   // Main bundle
@@ -15,11 +25,13 @@ export default [
         file: "dist/index.js",
         format: "cjs",
         sourcemap: true,
+        inlineDynamicImports: true,
       },
       {
         file: "dist/index.esm.js",
         format: "esm",
         sourcemap: true,
+        inlineDynamicImports: true,
       },
     ],
     external,

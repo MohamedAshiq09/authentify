@@ -4,6 +4,9 @@ export interface AuthentifyConfig {
   clientSecret?: string; // Optional for client-side usage
   apiUrl: string;
   timeout?: number;
+  // Optional on-chain integration
+  contractAddress?: string;
+  wsUrl?: string;
 }
 
 // User Registration
@@ -38,6 +41,39 @@ export interface AuthSession {
   expires_in: number;
   token_type: string;
 }
+
+// On-chain session (for contract-based auth flows)
+export interface OnchainAuthSession {
+  sessionId: string;
+  accountId: string;
+  expiresAt: number;
+  isActive: boolean;
+}
+
+// On-chain Identity info (matches contract storage schema)
+export interface IdentityInfo {
+  username: string;
+  password_hash: string;
+  social_id_hash: string;
+  social_provider: string;
+  wallet_address?: string;
+  is_verified?: boolean;
+  created_at?: number;
+  last_login?: number;
+  failed_attempts?: number;
+  is_locked?: boolean;
+}
+
+// Contract error variants (subset – extend as contract evolves)
+export interface ContractError {
+  IdentityAlreadyExists?: null;
+  UsernameAlreadyTaken?: null;
+  IdentityNotFound?: null;
+  InvalidCredentials?: null;
+  Unauthorized?: null;
+}
+
+export type ContractResult<T> = { Ok: T } | { Err: ContractError };
 
 // Biometric Authentication
 export interface BiometricOptions {

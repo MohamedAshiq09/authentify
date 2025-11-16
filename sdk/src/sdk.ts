@@ -1,24 +1,29 @@
 import axios, { AxiosInstance } from 'axios';
-import { 
-  AuthentifyConfig, 
-  UserRegistration, 
-  UserLogin, 
-  UserProfile, 
+import {
+  AuthentifyConfig,
+  UserRegistration,
+  UserLogin,
+  UserProfile,
   AuthSession,
   BiometricOptions,
   BiometricAssertion
 } from './types';
-import { validateConfig, validateEmail, validatePassword } from './utils';
+import { validateConfig, validateEmail, validatePassword, hashPassword, AuthentifyError } from './utils';
+import { ContractClient } from './contract';
 
 export class AuthentifySDK {
   private client: AxiosInstance;
   private config: AuthentifyConfig;
   private currentUser: UserProfile | null = null;
   private currentSession: AuthSession | null = null;
+  private contractClient: ContractClient | null = null;
 
   constructor(config: AuthentifyConfig) {
     validateConfig(config);
     this.config = config;
+    if (config.contractAddress) {
+      this.contractClient = new ContractClient(config);
+    }
     
     this.client = axios.create({
       baseURL: config.apiUrl,
@@ -58,12 +63,30 @@ export class AuthentifySDK {
    */
   async register(data: UserRegistration): Promise<UserProfile> {
     try {
-      // Validate input
       if (!validateEmail(data.email)) {
         throw new Error('Invalid email address');
       }
       if (!validatePassword(data.password)) {
         throw new Error('Password must be at least 8 characters long');
+      }
+
+      // Optional on-chain registration (requires username + contract client)
+      if (this.contractClient) {
+        if (!data.username) {
+          throw new AuthentifyError('Username required for on-chain registration', 'INVALID_USERNAME');
+        }
+        await this.contractClient.initialize();
+        const hashed = await hashPassword(data.password);
+        try {
+          await this.contractClient.registerIdentity({
+            username: data.username,
+            password_hash: hashed,
+            social_id_hash: `email:${data.email}`,
+            social_provider: 'email'
+          });
+        } catch (chainErr) {
+          console.warn('On-chain registration failed, continuing with backend only:', chainErr);
+        }
       }
 
       const response = await this.client.post('/api/auth/register', {
@@ -74,16 +97,57 @@ export class AuthentifySDK {
       });
 
       const { user, tokens } = response.data.data;
-      
-      // Store session
       this.currentUser = user;
       this.currentSession = tokens;
       this.storeSession(tokens);
-
       return user;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Registration failed');
     }
+  }
+
+  /**
+   * Explicit wallet connection (Polkadot extension). Returns address or null.
+   */
+  async connectWallet(): Promise<string | null> {
+    if (!this.contractClient) {
+      throw new AuthentifyError('Contract client not initialized', 'NO_CONTRACT_CLIENT');
+    }
+    await this.contractClient.initialize();
+    return this.contractClient.connectWallet();
+  }
+
+  /**
+   * Authenticate via on-chain contract using username + password.
+   * Returns the accountId if credentials are valid, else null.
+   */
+  async contractAuthenticate(username: string, password: string): Promise<string | null> {
+    if (!this.contractClient) {
+      throw new AuthentifyError('Contract client not initialized', 'NO_CONTRACT_CLIENT');
+    }
+    await this.contractClient.initialize();
+    const pwdHash = await hashPassword(password);
+    return this.contractClient.authenticate(username, pwdHash);
+  }
+
+  /**
+   * Create an on-chain session for a given account.
+   */
+  async contractCreateSession(accountId: string, durationMs = 24 * 60 * 60 * 1000) {
+    if (!this.contractClient) {
+      throw new AuthentifyError('Contract client not initialized', 'NO_CONTRACT_CLIENT');
+    }
+    await this.contractClient.initialize();
+    const sessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    return this.contractClient.createSession(accountId, sessionId, durationMs);
+  }
+
+  async contractRevokeSession(sessionId: string): Promise<boolean> {
+    if (!this.contractClient) {
+      throw new AuthentifyError('Contract client not initialized', 'NO_CONTRACT_CLIENT');
+    }
+    await this.contractClient.initialize();
+    return this.contractClient.revokeSession(sessionId);
   }
 
   /**

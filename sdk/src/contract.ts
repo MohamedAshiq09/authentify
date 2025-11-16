@@ -1,378 +1,349 @@
+import { ApiPromise, WsProvider } from "@polkadot/api";
+import { ContractPromise } from "@polkadot/api-contract";
+import {
+  web3Accounts,
+  web3Enable,
+  web3FromAddress,
+} from "@polkadot/extension-dapp";
+import type { WeightV2 } from "@polkadot/types/interfaces";
 import {
   AuthentifyConfig,
   IdentityInfo,
-  AuthSession,
+  OnchainAuthSession,
+  ContractResult,
 } from "./types";
-import { AuthentifyError, parseErrorMessage } from "./utils";
+import { CONTRACT_METHODS, DEFAULT_CONFIG } from "./constants";
+import { AuthentifyError, parseContractResult } from "./utils";
 
 export class ContractClient {
   private config: AuthentifyConfig;
-  private contract: any = null;
-  private account: string | null = null;
+  private api: ApiPromise | null = null;
+  private provider: WsProvider | null = null;
+  private contract: ContractPromise | null = null;
+  private signerAddress: string | null = null;
+  private signerInjector: any | null = null;
 
   constructor(config: AuthentifyConfig) {
-    if (!config.contractAddress) {
-      throw new AuthentifyError(
-        "Contract address is required",
-        "INVALID_CONFIG"
-      );
-    }
     this.config = config;
-    // Web3 initialization would happen on connectWallet or similar
+    // no-op
   }
 
-  /**
-   * Register a new identity on the contract
-   */
+  public async initialize(): Promise<void> {
+    if (this.api && this.contract) return;
+    const wsUrl = this.config.wsUrl || "ws://127.0.0.1:9944";
+    this.provider = new WsProvider(wsUrl);
+    this.api = await ApiPromise.create({ provider: this.provider });
+    if (!this.config.contractAddress) {
+      throw new AuthentifyError(
+        "Missing contract address",
+        "NO_CONTRACT_ADDRESS"
+      );
+    }
+    const metadata = await this.loadMetadata();
+    this.contract = new ContractPromise(
+      this.api,
+      metadata as any,
+      this.config.contractAddress
+    );
+    await this.enableWallet();
+  }
+
+  private async loadMetadata(): Promise<any> {
+    try {
+      const meta = await import("../public/contract-metadata.json");
+      return meta.default || meta;
+    } catch {
+      return { spec: { messages: [] } };
+    }
+  }
+
+  private async enableWallet(): Promise<void> {
+    try {
+      const extensions = await web3Enable("Authentify SDK");
+      if (!extensions.length) return;
+      const accounts = await web3Accounts();
+      if (!accounts.length) return;
+      this.signerAddress = accounts[0].address;
+      this.signerInjector = await web3FromAddress(accounts[0].address);
+    } catch (e) {
+      console.warn("Wallet extension not available", e);
+    }
+  }
+
+  public async connectWallet(): Promise<string | null> {
+    await this.enableWallet();
+    return this.signerAddress;
+  }
+
+  private ensureSigner(): void {
+    if (!this.signerAddress || !this.signerInjector) {
+      throw new AuthentifyError("Wallet not connected", "WALLET_NOT_CONNECTED");
+    }
+  }
+
+  private makeGas(): WeightV2 {
+    const ref = BigInt(DEFAULT_CONFIG.CONTRACT_DEFAULT_GAS);
+    const proof = ref;
+    return this.api!.registry.createType("WeightV2", {
+      refTime: ref,
+      proofSize: proof,
+    }) as unknown as WeightV2;
+  }
+
+  private makeMaxGas(): WeightV2 {
+    // Very high gas for dry-run estimation (ref/proof ~1e15)
+    const ref = BigInt("1000000000000000");
+    const proof = ref;
+    return this.api!.registry.createType("WeightV2", {
+      refTime: ref,
+      proofSize: proof,
+    }) as unknown as WeightV2;
+  }
+
+  private multiplyWeight(g: WeightV2): WeightV2 {
+    // Apply a safety multiplier to WeightV2
+    const toBn = (x: any) =>
+      typeof x?.toBn === "function" ? x.toBn() : BigInt(x ?? 0);
+    const refBn = toBn((g as any).refTime ?? BigInt(0));
+    const proofBn = toBn((g as any).proofSize ?? BigInt(0));
+    const ref =
+      (refBn * BigInt(DEFAULT_CONFIG.GAS_MULTIPLIER_NUM)) /
+      BigInt(DEFAULT_CONFIG.GAS_MULTIPLIER_DEN);
+    const proof =
+      (proofBn * BigInt(DEFAULT_CONFIG.GAS_MULTIPLIER_NUM)) /
+      BigInt(DEFAULT_CONFIG.GAS_MULTIPLIER_DEN);
+    return this.api!.registry.createType("WeightV2", {
+      refTime: ref,
+      proofSize: proof,
+    }) as unknown as WeightV2;
+  }
+
+  private async estimateGas(
+    method: string,
+    value: number | bigint,
+    ...args: any[]
+  ): Promise<WeightV2> {
+    await this.ensureInitialized();
+    const dryRun = await (this.contract as any).query[method](
+      this.caller(),
+      { gasLimit: this.makeMaxGas(), storageDepositLimit: null, value },
+      ...args
+    );
+    const required: WeightV2 = (dryRun as any).gasRequired as WeightV2;
+    return this.multiplyWeight(required);
+  }
+
+  private async ensureInitialized(): Promise<void> {
+    if (!this.api || !this.contract) {
+      await this.initialize();
+    }
+  }
+
+  private caller(): string {
+    if (!this.signerAddress) {
+      throw new AuthentifyError("Wallet not connected", "WALLET_NOT_CONNECTED");
+    }
+    return this.signerAddress;
+  }
+
   public async registerIdentity(data: {
     username: string;
     password_hash: string;
     social_id_hash: string;
     social_provider: string;
   }): Promise<boolean> {
-    try {
-      if (!this.contract) {
-        throw new AuthentifyError(
-          "Contract not initialized",
-          "CONTRACT_NOT_INITIALIZED"
-        );
-      }
-
-      const tx = await this.contract.methods
-        .register_identity(
-          data.username,
-          data.password_hash,
-          data.social_id_hash,
-          data.social_provider
-        )
-        .send({ from: this.account });
-
-      return !!tx.transactionHash;
-    } catch (error) {
-      throw new AuthentifyError(
-        "Contract registration failed: " + parseErrorMessage(error),
-        "CONTRACT_ERROR",
-        error
-      );
-    }
+    await this.ensureInitialized();
+    this.ensureSigner();
+    const value = DEFAULT_CONFIG.CONTRACT_DEFAULT_VALUE;
+    const gasLimit = await this.estimateGas(
+      CONTRACT_METHODS.REGISTER_IDENTITY,
+      value,
+      data.username,
+      data.password_hash,
+      data.social_id_hash,
+      data.social_provider
+    );
+    await this.contract!.tx[CONTRACT_METHODS.REGISTER_IDENTITY](
+      { gasLimit, storageDepositLimit: null, value },
+      data.username,
+      data.password_hash,
+      data.social_id_hash,
+      data.social_provider
+    ).signAndSend(this.signerAddress!, { signer: this.signerInjector!.signer });
+    return true;
   }
 
-  /**
-   * Authenticate user credentials against contract
-   */
   public async authenticate(
     username: string,
     passwordHash: string
   ): Promise<string | null> {
-    try {
-      if (!this.contract) {
-        throw new AuthentifyError(
-          "Contract not initialized",
-          "CONTRACT_NOT_INITIALIZED"
-        );
-      }
-
-      const result = await this.contract.methods
-        .authenticate(username, passwordHash)
-        .call();
-
-      return result ? result : null;
-    } catch (error) {
-      throw new AuthentifyError(
-        "Contract authentication failed: " + parseErrorMessage(error),
-        "CONTRACT_ERROR",
-        error
+    await this.ensureInitialized();
+    const gasLimit = this.makeGas();
+    const result = await this.contract!.query[CONTRACT_METHODS.AUTHENTICATE](
+      this.caller(),
+      { gasLimit, storageDepositLimit: null },
+      username,
+      passwordHash
+    );
+    if (result.result.isOk && result.output) {
+      return parseContractResult(
+        result.output.toHuman() as unknown as ContractResult<string>
       );
     }
+    return null;
   }
 
-  /**
-   * Create a new session on the contract
-   */
   public async createSession(
     accountId: string,
     sessionId: string,
-    duration: number
-  ): Promise<AuthSession | null> {
-    try {
-      if (!this.contract) {
-        throw new AuthentifyError(
-          "Contract not initialized",
-          "CONTRACT_NOT_INITIALIZED"
-        );
-      }
+    durationMs: number
+  ): Promise<OnchainAuthSession | null> {
+    await this.ensureInitialized();
+    this.ensureSigner();
+    const value = DEFAULT_CONFIG.CONTRACT_DEFAULT_VALUE;
+    const gasLimit = await this.estimateGas(
+      CONTRACT_METHODS.CREATE_SESSION,
+      value,
+      accountId,
+      sessionId,
+      durationMs
+    );
+    await this.contract!.tx[CONTRACT_METHODS.CREATE_SESSION](
+      { gasLimit, storageDepositLimit: null, value },
+      accountId,
+      sessionId,
+      durationMs
+    ).signAndSend(this.signerAddress!, { signer: this.signerInjector!.signer });
+    return {
+      sessionId,
+      accountId,
+      expiresAt: Date.now() + durationMs,
+      isActive: true,
+    };
+  }
 
-      const expiresAt = Date.now() + duration;
-
-      await this.contract.methods
-        .create_session(accountId, sessionId, Math.floor(expiresAt / 1000))
-        .send({ from: this.account });
-
-      return {
-        sessionId,
-        accountId,
-        expiresAt,
-        isActive: true,
-      };
-    } catch (error) {
-      throw new AuthentifyError(
-        "Session creation failed: " + parseErrorMessage(error),
-        "CONTRACT_ERROR",
-        error
+  public async verifySession(sessionId: string): Promise<string | null> {
+    await this.ensureInitialized();
+    const gasLimit = this.makeGas();
+    const result = await this.contract!.query[CONTRACT_METHODS.VERIFY_SESSION](
+      this.caller(),
+      { gasLimit, storageDepositLimit: null },
+      sessionId
+    );
+    if (result.result.isOk && result.output) {
+      return parseContractResult(
+        result.output.toHuman() as unknown as ContractResult<string>
       );
     }
+    return null;
   }
 
-  /**
-   * Verify if a session is valid
-   */
-  public async verifySession(sessionId: string): Promise<boolean> {
-    try {
-      if (!this.contract) {
-        throw new AuthentifyError(
-          "Contract not initialized",
-          "CONTRACT_NOT_INITIALIZED"
-        );
-      }
-
-      const isValid = await this.contract.methods
-        .verify_session(sessionId)
-        .call();
-
-      return !!isValid;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  /**
-   * Revoke a session
-   */
   public async revokeSession(sessionId: string): Promise<boolean> {
-    try {
-      if (!this.contract) {
-        throw new AuthentifyError(
-          "Contract not initialized",
-          "CONTRACT_NOT_INITIALIZED"
-        );
-      }
-
-      await this.contract.methods
-        .revoke_session(sessionId)
-        .send({ from: this.account });
-
-      return true;
-    } catch (error) {
-      throw new AuthentifyError(
-        "Session revocation failed: " + parseErrorMessage(error),
-        "CONTRACT_ERROR",
-        error
-      );
-    }
+    await this.ensureInitialized();
+    this.ensureSigner();
+    const value = DEFAULT_CONFIG.CONTRACT_DEFAULT_VALUE;
+    const gasLimit = await this.estimateGas(
+      CONTRACT_METHODS.REVOKE_SESSION,
+      value,
+      sessionId
+    );
+    await this.contract!.tx[CONTRACT_METHODS.REVOKE_SESSION](
+      { gasLimit, storageDepositLimit: null, value },
+      sessionId
+    ).signAndSend(this.signerAddress!, { signer: this.signerInjector!.signer });
+    return true;
   }
 
-  /**
-   * Get identity information
-   */
-  public async getIdentity(accountId: string): Promise<IdentityInfo | null> {
-    try {
-      if (!this.contract) {
-        throw new AuthentifyError(
-          "Contract not initialized",
-          "CONTRACT_NOT_INITIALIZED"
-        );
-      }
-
-      const identity = await this.contract.methods
-        .get_identity(accountId)
-        .call();
-
-      if (!identity) {
-        return null;
-      }
-
-      return {
-        username: identity.username || "",
-        password_hash: identity.password_hash || "",
-        social_id_hash: identity.social_id_hash || "",
-        social_provider: identity.social_provider || "",
-        wallet_address: identity.wallet_address || "",
-        is_verified: identity.is_verified || false,
-        created_at: identity.created_at || 0,
-        last_login: identity.last_login || 0,
-        failed_attempts: identity.failed_attempts || 0,
-        is_locked: identity.is_locked || false,
-      };
-    } catch (error) {
-      throw new AuthentifyError(
-        "Failed to get identity: " + parseErrorMessage(error),
-        "CONTRACT_ERROR",
-        error
-      );
-    }
-  }
-
-  /**
-   * Get account ID by username
-   */
-  public async getAccountByUsername(username: string): Promise<string | null> {
-    try {
-      if (!this.contract) {
-        throw new AuthentifyError(
-          "Contract not initialized",
-          "CONTRACT_NOT_INITIALIZED"
-        );
-      }
-
-      const accountId = await this.contract.methods
-        .get_account_by_username(username)
-        .call();
-
-      return accountId || null;
-    } catch (error) {
-      throw new AuthentifyError(
-        "Failed to get account: " + parseErrorMessage(error),
-        "CONTRACT_ERROR",
-        error
-      );
-    }
-  }
-
-  /**
-   * Check if username is available
-   */
-  public async isUsernameAvailable(username: string): Promise<boolean> {
-    try {
-      if (!this.contract) {
-        throw new AuthentifyError(
-          "Contract not initialized",
-          "CONTRACT_NOT_INITIALIZED"
-        );
-      }
-
-      const available = await this.contract.methods
-        .is_username_available(username)
-        .call();
-
-      return !!available;
-    } catch (error) {
-      throw new AuthentifyError(
-        "Failed to check username availability: " + parseErrorMessage(error),
-        "CONTRACT_ERROR",
-        error
-      );
-    }
-  }
-
-  /**
-   * Change password on contract
-   */
   public async changePassword(
-    oldPasswordHash: string,
-    newPasswordHash: string
+    oldHash: string,
+    newHash: string
   ): Promise<boolean> {
-    try {
-      if (!this.contract) {
-        throw new AuthentifyError(
-          "Contract not initialized",
-          "CONTRACT_NOT_INITIALIZED"
-        );
-      }
-
-      await this.contract.methods
-        .change_password(oldPasswordHash, newPasswordHash)
-        .send({ from: this.account });
-
-      return true;
-    } catch (error) {
-      throw new AuthentifyError(
-        "Password change failed: " + parseErrorMessage(error),
-        "CONTRACT_ERROR",
-        error
-      );
-    }
+    await this.ensureInitialized();
+    this.ensureSigner();
+    const value = DEFAULT_CONFIG.CONTRACT_DEFAULT_VALUE;
+    const gasLimit = await this.estimateGas(
+      CONTRACT_METHODS.CHANGE_PASSWORD,
+      value,
+      oldHash,
+      newHash
+    );
+    await this.contract!.tx[CONTRACT_METHODS.CHANGE_PASSWORD](
+      { gasLimit, storageDepositLimit: null, value },
+      oldHash,
+      newHash
+    ).signAndSend(this.signerAddress!, { signer: this.signerInjector!.signer });
+    return true;
   }
 
-  /**
-   * Get total number of users
-   */
+  public async getIdentity(accountId: string): Promise<IdentityInfo | null> {
+    await this.ensureInitialized();
+    const gasLimit = this.makeGas();
+    const result = await this.contract!.query[CONTRACT_METHODS.GET_IDENTITY](
+      this.caller(),
+      { gasLimit, storageDepositLimit: null },
+      accountId
+    );
+    if (result.result.isOk && result.output) {
+      return parseContractResult(
+        result.output.toHuman() as unknown as ContractResult<IdentityInfo>
+      );
+    }
+    return null;
+  }
+
+  public async isUsernameAvailable(username: string): Promise<boolean> {
+    await this.ensureInitialized();
+    const gasLimit = this.makeGas();
+    const result = await this.contract!.query[
+      CONTRACT_METHODS.IS_USERNAME_AVAILABLE
+    ](this.caller(), { gasLimit, storageDepositLimit: null }, username);
+    if (result.result.isOk && result.output) {
+      return parseContractResult(
+        result.output.toHuman() as unknown as ContractResult<boolean>
+      );
+    }
+    return false;
+  }
+
+  public async getAccountByUsername(username: string): Promise<string | null> {
+    await this.ensureInitialized();
+    const gasLimit = this.makeGas();
+    const result = await this.contract!.query[
+      CONTRACT_METHODS.GET_ACCOUNT_BY_USERNAME
+    ](this.caller(), { gasLimit, storageDepositLimit: null }, username);
+    if (result.result.isOk && result.output) {
+      return parseContractResult(
+        result.output.toHuman() as unknown as ContractResult<string>
+      );
+    }
+    return null;
+  }
+
   public async getTotalUsers(): Promise<number> {
-    try {
-      if (!this.contract) {
-        throw new AuthentifyError(
-          "Contract not initialized",
-          "CONTRACT_NOT_INITIALIZED"
-        );
-      }
-
-      const total = await this.contract.methods.get_total_users().call();
-      return parseInt(total, 10) || 0;
-    } catch (error) {
-      throw new AuthentifyError(
-        "Failed to get total users: " + parseErrorMessage(error),
-        "CONTRACT_ERROR",
-        error
+    await this.ensureInitialized();
+    const gasLimit = this.makeGas();
+    const result = await this.contract!.query[CONTRACT_METHODS.GET_TOTAL_USERS](
+      this.caller(),
+      { gasLimit, storageDepositLimit: null }
+    );
+    if (result.result.isOk && result.output) {
+      return parseContractResult(
+        result.output.toHuman() as unknown as ContractResult<number>
       );
     }
+    return 0;
   }
 
-  /**
-   * Get number of active sessions
-   */
   public async getActiveSessions(): Promise<number> {
-    try {
-      if (!this.contract) {
-        throw new AuthentifyError(
-          "Contract not initialized",
-          "CONTRACT_NOT_INITIALIZED"
-        );
-      }
-
-      const active = await this.contract.methods.get_active_sessions().call();
-      return parseInt(active, 10) || 0;
-    } catch (error) {
-      throw new AuthentifyError(
-        "Failed to get active sessions: " + parseErrorMessage(error),
-        "CONTRACT_ERROR",
-        error
-      );
-    }
+    return 0;
   }
 
-  /**
-   * Set the Web3 account to use for transactions
-   */
-  public setAccount(account: string): void {
-    this.account = account;
-  }
-
-  /**
-   * Connect to a Web3 provider (for browser environments)
-   */
-  public async connectWallet(): Promise<string[]> {
-    try {
-      if (typeof window === "undefined" || !(window as any).ethereum) {
-        throw new AuthentifyError(
-          "Web3 provider not available",
-          "WEB3_NOT_AVAILABLE"
-        );
-      }
-
-      const accounts = await (window as any).ethereum.request({
-        method: "eth_requestAccounts",
-      });
-
-      if (accounts && accounts.length > 0) {
-        this.account = accounts[0];
-      }
-
-      return accounts;
-    } catch (error) {
-      throw new AuthentifyError(
-        "Failed to connect wallet: " + parseErrorMessage(error),
-        "WALLET_CONNECT_FAILED",
-        error
-      );
-    }
+  public async disconnect(): Promise<void> {
+    if (this.api) await this.api.disconnect();
+    this.api = null;
+    this.contract = null;
+    this.provider = null;
   }
 }
+
+export default ContractClient;
