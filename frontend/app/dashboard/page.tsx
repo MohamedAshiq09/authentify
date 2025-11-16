@@ -2,14 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Shield, 
-  User, 
-  Settings, 
   Fingerprint, 
   Key, 
   LogOut,
@@ -18,15 +16,12 @@ import {
   Plus,
   Smartphone,
   Lock,
-  Activity,
-  Database,
-  Zap,
-  Users,
-  BarChart3
+  Users
 } from 'lucide-react';
 import { BiometricAuth } from '@/components/auth/biometric-auth';
 import { UserSidebar } from '@/components/user/sidebar';
 import { SDKClientManager } from '@/components/sdk/sdk-client-manager';
+import { sdkApi } from '@/lib/api/sdk';
 
 interface UserProfile {
   id: string;
@@ -53,6 +48,7 @@ export default function DashboardPage() {
   const [showBiometricSetup, setShowBiometricSetup] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState('overview');
+  const [userStats, setUserStats] = useState<{ total_users: number } | null>(null);
 
   useEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
@@ -93,6 +89,33 @@ export default function DashboardPage() {
         }
       } catch (biometricError) {
         console.warn('Could not load biometric credentials:', biometricError);
+      }
+
+      // Load user statistics for SDK clients
+      try {
+        const clientsResponse = await fetch(`${API_URL}/sdk-client/clients`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        if (clientsResponse.ok) {
+          const clientsData = await clientsResponse.json();
+          const clients = clientsData.data?.clients || [];
+          
+          if (clients.length > 0) {
+            // Get stats for the first client (or you could aggregate all clients)
+            const firstClient = clients[0];
+            const statsResponse = await fetch(`${API_URL}/sdk-client/clients/${firstClient.client_id}/stats`, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            });
+
+            if (statsResponse.ok) {
+              const statsData = await statsResponse.json();
+              setUserStats(statsData.data);
+            }
+          }
+        }
+      } catch (statsError) {
+        console.warn('Could not load user statistics:', statsError);
       }
 
     } catch (error: any) {
@@ -209,7 +232,17 @@ export default function DashboardPage() {
       </div>
 
       {/* Bottom Stats */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-3 gap-6">
+        <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
+          <div className="text-xs text-gray-400 mb-1 flex items-center gap-1">
+            <Users className="h-3 w-3" />
+            TOTAL USERS
+          </div>
+          <div className="text-2xl font-bold text-blue-400">
+            {userStats?.total_users ?? 0}
+          </div>
+          <div className="text-xs text-gray-400">Authenticated Users</div>
+        </div>
         <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
           <div className="text-xs text-gray-400 mb-1">DATABASES</div>
           <div className="text-2xl font-bold">4</div>
@@ -431,7 +464,7 @@ export default function DashboardPage() {
         <div className="px-6 py-4">
           <div className="flex items-center gap-3">
             <Shield className="h-5 w-5 text-pink-400" />
-            <span className="text-sm text-gray-400">Authentify / Acme Corp / First Authentify project</span>
+            {/* <span className="text-sm text-gray-400">Authentify / Acme Corp / First Authentify project</span> */}
           </div>
         </div>
       </div>

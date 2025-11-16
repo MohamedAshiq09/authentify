@@ -65,4 +65,11 @@ export const sdkApi = {
   getClients: async () => {
     return api.get<{ clients: any[] }>('/sdk/clients');
   },
+
+  /**
+   * Get client user statistics
+   */
+  getClientStats: async (clientId: string) => {
+    return api.get<{ total_users: number }>(`/sdk/clients/${clientId}/stats`);
+  },
 };
