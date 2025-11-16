@@ -72,4 +72,22 @@ export const sdkApi = {
   getClientStats: async (clientId: string) => {
     return api.get<{ total_users: number }>(`/sdk/clients/${clientId}/stats`);
   },
+
+  /**
+   * Get comprehensive user analytics
+   */
+  getUserAnalytics: async () => {
+    return api.get<{
+      total_users: number;
+      active_today: number;
+      total_requests: number;
+      bandwidth_gb: number;
+      growth_rate: number;
+      databases_count: number;
+      storage_mb: number;
+      queries_today: number;
+      avg_response_time: number;
+      daily_stats: Array<{ date: string; users: number; requests: number }>;
+    }>('/sdk-client/analytics');
+  },
 };
