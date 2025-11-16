@@ -25,7 +25,6 @@ import {
 import { BiometricAuth } from '@/components/auth/biometric-auth';
 import { UserSidebar } from '@/components/user/sidebar';
 import { SDKClientManager } from '@/components/sdk/sdk-client-manager';
-import { sdkApi } from '@/lib/api/sdk';
 
 interface UserProfile {
   id: string;
@@ -53,6 +52,18 @@ export default function DashboardPage() {
   const [token, setToken] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState('overview');
   const [userStats, setUserStats] = useState<{ total_users: number } | null>(null);
+  const [analytics, setAnalytics] = useState<{
+    total_users: number;
+    active_today: number;
+    total_requests: number;
+    bandwidth_gb: number;
+    growth_rate: number;
+    databases_count: number;
+    storage_mb: number;
+    queries_today: number;
+    avg_response_time: number;
+    daily_stats: Array<{ date: string; users: number; requests: number }>;
+  } | null>(null);
 
   useEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
@@ -95,31 +106,19 @@ export default function DashboardPage() {
         console.warn('Could not load biometric credentials:', biometricError);
       }
 
-      // Load user statistics for SDK clients
+      // Load comprehensive analytics
       try {
-        const clientsResponse = await fetch(`${API_URL}/sdk-client/clients`, {
+        const analyticsResponse = await fetch(`${API_URL}/sdk-client/analytics`, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
 
-        if (clientsResponse.ok) {
-          const clientsData = await clientsResponse.json();
-          const clients = clientsData.data?.clients || [];
-
-          if (clients.length > 0) {
-            // Get stats for the first client (or you could aggregate all clients)
-            const firstClient = clients[0];
-            const statsResponse = await fetch(`${API_URL}/sdk-client/clients/${firstClient.client_id}/stats`, {
-              headers: { Authorization: `Bearer ${accessToken}` },
-            });
-
-            if (statsResponse.ok) {
-              const statsData = await statsResponse.json();
-              setUserStats(statsData.data);
-            }
-          }
+        if (analyticsResponse.ok) {
+          const analyticsData = await analyticsResponse.json();
+          setAnalytics(analyticsData.data);
+          setUserStats({ total_users: analyticsData.data.total_users });
         }
-      } catch (statsError) {
-        console.warn('Could not load user statistics:', statsError);
+      } catch (analyticsError) {
+        console.warn('Could not load analytics:', analyticsError);
       }
 
     } catch (error: any) {
@@ -418,11 +417,11 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 gap-8 mb-8">
         <div>
           <div className="text-sm text-gray-400 mb-1">Bandwidth</div>
-          <div className="text-4xl font-bold">1.19 <span className="text-lg text-gray-400">GB</span></div>
+          <div className="text-4xl font-bold">{analytics?.bandwidth_gb?.toFixed(2) ?? '0.00'} <span className="text-lg text-gray-400">GB</span></div>
         </div>
         <div className="text-right">
           <div className="text-sm text-gray-400 mb-1">Requests</div>
-          <div className="text-4xl font-bold">2K</div>
+          <div className="text-4xl font-bold">{analytics?.total_requests ? (analytics.total_requests >= 1000 ? `${(analytics.total_requests / 1000).toFixed(1)}K` : analytics.total_requests) : '0'}</div>
         </div>
       </div>
 
@@ -433,13 +432,27 @@ export default function DashboardPage() {
           Daily Analytics
         </h3>
         <div className="h-48 flex items-end gap-1 bg-gray-900 border border-gray-800 rounded-lg p-4">
-          {Array.from({ length: 30 }).map((_, i) => (
+          {analytics?.daily_stats?.length ? analytics.daily_stats.map((stat, i) => {
+            const maxRequests = Math.max(...analytics.daily_stats.map(s => s.requests), 1);
+            const height = (stat.requests / maxRequests) * 100;
+            return (
+              <div
+                key={i}
+                className="flex-1 bg-gradient-to-t from-pink-500 to-pink-400 rounded-t"
+                style={{
+                  height: `${height}%`,
+                  opacity: 0.6 + (height / 100) * 0.4,
+                }}
+                title={`${stat.date}: ${stat.requests} requests`}
+              />
+            );
+          }) : Array.from({ length: 30 }).map((_, i) => (
             <div
               key={i}
-              className="flex-1 bg-gradient-to-t from-pink-500 to-pink-400 rounded-t"
+              className="flex-1 bg-gradient-to-t from-gray-600 to-gray-500 rounded-t"
               style={{
-                height: `${Math.random() * 100}%`,
-                opacity: 0.6 + Math.random() * 0.4,
+                height: '10%',
+                opacity: 0.3,
               }}
             />
           ))}
@@ -459,7 +472,7 @@ export default function DashboardPage() {
               TOTAL USERS
             </div>
             <div className="text-2xl font-bold text-blue-400">
-              {userStats?.total_users ?? 0}
+              {analytics?.total_users ?? 0}
             </div>
             <div className="text-xs text-gray-400">Authenticated Users</div>
           </div>
@@ -469,7 +482,7 @@ export default function DashboardPage() {
               ACTIVE TODAY
             </div>
             <div className="text-2xl font-bold text-green-400">
-              {Math.floor((userStats?.total_users ?? 0) * 0.3)}
+              {analytics?.active_today ?? 0}
             </div>
             <div className="text-xs text-gray-400">Active Users</div>
           </div>
@@ -478,7 +491,9 @@ export default function DashboardPage() {
               <TrendingUp className="h-3 w-3" />
               GROWTH RATE
             </div>
-            <div className="text-2xl font-bold text-purple-400">+12%</div>
+            <div className="text-2xl font-bold text-purple-400">
+              {analytics?.growth_rate ? (analytics.growth_rate > 0 ? `+${analytics.growth_rate}%` : `${analytics.growth_rate}%`) : '0%'}
+            </div>
             <div className="text-xs text-gray-400">This Month</div>
           </div>
         </div>
@@ -493,22 +508,22 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
             <div className="text-xs text-gray-400 mb-1">DATABASES</div>
-            <div className="text-2xl font-bold">4</div>
+            <div className="text-2xl font-bold">{analytics?.databases_count ?? 0}</div>
             <div className="text-xs text-gray-400">Active Databases</div>
           </div>
           <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
             <div className="text-xs text-gray-400 mb-1">STORAGE</div>
-            <div className="text-2xl font-bold">8.0 <span className="text-sm">MB</span></div>
+            <div className="text-2xl font-bold">{analytics?.storage_mb?.toFixed(1) ?? '0.0'} <span className="text-sm">MB</span></div>
             <div className="text-xs text-gray-400">Used Storage</div>
           </div>
           <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
             <div className="text-xs text-gray-400 mb-1">QUERIES</div>
-            <div className="text-2xl font-bold">1.2K</div>
+            <div className="text-2xl font-bold">{analytics?.queries_today ? (analytics.queries_today >= 1000 ? `${(analytics.queries_today / 1000).toFixed(1)}K` : analytics.queries_today) : '0'}</div>
             <div className="text-xs text-gray-400">Today</div>
           </div>
           <div className="p-4 rounded-lg bg-gray-900 border border-gray-800">
             <div className="text-xs text-gray-400 mb-1">RESPONSE TIME</div>
-            <div className="text-2xl font-bold">45 <span className="text-sm">ms</span></div>
+            <div className="text-2xl font-bold">{analytics?.avg_response_time ?? 0} <span className="text-sm">ms</span></div>
             <div className="text-xs text-gray-400">Average</div>
           </div>
         </div>
