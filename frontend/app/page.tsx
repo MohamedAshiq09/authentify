@@ -53,7 +53,7 @@ export default function HomePage() {
                 <div className="border-b border-border/30 px-4 py-3 flex items-center justify-between bg-card/50">
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4 text-pink-400" />
-                    <span className="text-sm font-medium">Authentify / Acme Corp / First Authentify project</span>
+                    {/* <span className="text-sm font-medium">Authentify / Acme Corp / First Authentify project</span> */}
                   </div>
                 </div>
 

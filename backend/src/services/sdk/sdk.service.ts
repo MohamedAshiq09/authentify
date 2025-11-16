@@ -200,4 +200,27 @@ export class SDKService {
 
     return client.redirect_uris.includes(redirectUri);
   }
+
+  /**
+   * Get user statistics for a client
+   */
+  static async getClientUserStats(clientId: string, userId: string): Promise<{ total_users: number }> {
+    // First verify the client belongs to the user
+    const client = await this.getClient(clientId);
+    if (!client || client.created_by !== userId) {
+      throw new Error('Client not found or access denied');
+    }
+
+    // Count unique users who have authenticated with this client
+    const { count, error } = await supabaseAdmin
+      .from('sessions')
+      .select('user_id', { count: 'exact', head: true })
+      .eq('client_id', clientId);
+
+    if (error) {
+      throw new Error(`Failed to get user statistics: ${error.message}`);
+    }
+
+    return { total_users: count || 0 };
+  }
 }
