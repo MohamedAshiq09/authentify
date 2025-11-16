@@ -72,12 +72,31 @@ authentify/
 - Securely store password hashes on-chain
 - Verify user credentials during authentication
 - Maintain session state and user data
+- **Cross-Chain Identity Management**: Link user identities across multiple blockchain networks (Polkadot, Ethereum, Solana, etc.)
+- **Biometric Authentication Support**: Store encrypted biometric credential hashes for fingerprint and facial recognition authentication
 
 **Key Functions**:
 - `register_user(wallet_address, username, password_hash)` - Register new user
 - `verify_password(username, password_hash)` - Authenticate user
 - `get_user(wallet_address)` - Retrieve user data
 - `update_user(username, new_data)` - Update user information
+- `link_chain_identity(username, chain_id, wallet_address)` - Link identity across chains
+- `verify_chain_identity(username, chain_id)` - Verify cross-chain identity
+- `register_biometric(username, biometric_hash, biometric_type)` - Register biometric credential
+- `verify_biometric(username, biometric_hash)` - Authenticate using biometric data
+
+**Cross-Chain Identity Features**:
+- Support for multiple blockchain networks (Polkadot, Ethereum, Solana, BSC, Polygon)
+- Single identity mapped to multiple wallet addresses across different chains
+- Unified authentication experience regardless of the chain being used
+- Seamless cross-chain dApp access with one login
+
+**Biometric Authentication Features**:
+- Fingerprint recognition support (stored as encrypted hashes)
+- Facial recognition support (future implementation)
+- Secure biometric template storage on-chain
+- Multi-factor authentication combining biometric + password
+- Privacy-preserving biometric verification (hashes only, never raw data)
 
 **Deployment**: Pop Network Paseo Testnet
 
