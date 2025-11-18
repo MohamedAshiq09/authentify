@@ -85,7 +85,9 @@ graph TD
     class API,DB,JWT,OAUTH backendLayer
     class W,BC,PN blockchainLayer
     class G,GH externalLayer
-```## 📋 Component Breakdown
+```
+
+## 📋 Component Breakdown
 
 ### 🎯 **Layer 1: User Interaction**
 
@@ -209,7 +211,9 @@ graph LR
     class USER,SESSION,IDENTITY dataSource
     class FRONTEND,SDK,BACKEND,CONTRACT processor
     class SUPABASE,BLOCKCHAIN,LOCALSTORAGE storage
-```---
+```
+
+---
 
 ## 🔧 Technology Stack Visualization
 
@@ -266,7 +270,9 @@ graph TB
     class EXPRESS,NODE,JWT application
     class SUPABASE,REDIS data
     class INK,POPNET,SUBSTRATE blockchain
-```---
+```
+
+---
 
 ## 🏁 Quick Start Integration Flow
 
