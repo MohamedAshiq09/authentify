@@ -21,8 +21,8 @@ Authentify is a decentralized identity authentication smart contract built on Po
 | ------------------- | -------------------------------------------------- | -------------------------------------------------- |
 | **Authentify Core** | `5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY` | `0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5` |
 
-> **Network**: Pop Network (Paseo Testnet)  
-> **RPC**: `wss://rpc1.paseo.popnetwork.xyz`  
+> **Network**: Pop Network (Paseo Testnet)
+> **RPC**: `wss://rpc1.paseo.popnetwork.xyz`
 > **Last Updated**: November 2024
 
 ## 🏗️ Contract Details

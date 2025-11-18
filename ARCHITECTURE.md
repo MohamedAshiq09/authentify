@@ -18,7 +18,7 @@ Our **three-layer hybrid approach** consists of distinct but integrated componen
 ```
 authentify/
 ├── contract/          # ink! Smart Contract (Polkadot)
-├── backend/          # Node.js API Server (Express + Supabase)  
+├── backend/          # Node.js API Server (Express + Supabase)
 ├── frontend/         # Next.js Documentation Platform
 ├── sdk/              # Published NPM Package (TypeScript)
 └── ARCHITECTURE.md   # This file
@@ -26,13 +26,13 @@ authentify/
 
 ## 🌐 Deployed System (Pop Network Paseo Testnet)
 
-| Component               | Address/URL                                        | Status              |
-| ----------------------- | -------------------------------------------------- | ------------------- |
-| **Smart Contract**      | `5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY` | ✅ Deployed         |
-| **Backend API**         | `https://api.authentify.dev`                      | ✅ Production Ready |
-| **Documentation Site**  | `https://docs.authentify.dev`                     | ✅ Live             |
-| **NPM SDK Package**     | `authentify-sdk@1.0.5`                            | ✅ Published        |
-| **Demo Application**    | `https://demo.authentify.dev`                     | 🚧 In Development   |
+| Component              | Address/URL                                        | Status              |
+| ---------------------- | -------------------------------------------------- | ------------------- |
+| **Smart Contract**     | `5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY` | ✅ Deployed         |
+| **Backend API**        | `https://api.authentify.dev`                       | ✅ Production Ready |
+| **Documentation Site** | `https://docs.authentify.dev`                      | ✅ Live             |
+| **NPM SDK Package**    | `authentify-sdk@1.0.5`                             | ✅ Published        |
+| **Demo Application**   | `https://demo.authentify.dev`                      | 🚧 In Development   |
 
 > **Network**: Pop Network (Paseo Testnet)  
 > **RPC**: `wss://rpc1.paseo.popnetwork.xyz`  
@@ -45,32 +45,32 @@ graph TD
     %% User Layer
     U[👤 Developer/End User] --> F[🌐 Frontend App]
     U --> D[📱 dApp Integration]
-    
+
     %% Frontend Layer
     F --> SDK[📦 Authentify SDK]
     D --> SDK
-    
+
     %% SDK Components
     SDK --> AC[🔗 API Client]
     SDK --> CC[⛓️ Contract Client]
     SDK --> RC[⚛️ React Components]
-    
+
     %% Backend Services
     AC --> API[🚀 Backend API]
     API --> DB[(🗄️ Supabase DB)]
     API --> JWT[🔐 JWT Service]
     API --> OAUTH[🔑 OAuth Providers]
-    
+
     %% Blockchain Layer
     CC --> W[👛 Wallet Extension]
     CC --> BC[⛓️ Smart Contract]
     W --> BC
-    
+
     %% External Services
     OAUTH --> G[📧 Google]
     OAUTH --> GH[🐙 GitHub]
     BC --> PN[🔗 Pop Network]
-    
+
     %% Black and White Styling
     classDef userLayer fill:#f8f9fa,stroke:#212529,stroke-width:2px
     classDef frontendLayer fill:#e9ecef,stroke:#495057,stroke-width:2px
@@ -171,18 +171,18 @@ graph LR
     USER[(👤 User Data)]
     SESSION[(🔐 Session Data)]
     IDENTITY[(🆔 Identity Data)]
-    
+
     %% Processing Layers
     FRONTEND[🌐 Frontend Layer]
     SDK[📦 SDK Layer]
     BACKEND[🚀 Backend Layer]
     CONTRACT[⛓️ Contract Layer]
-    
+
     %% Data Stores
     SUPABASE[(🗄️ Supabase)]
     BLOCKCHAIN[(⛓️ Blockchain)]
     LOCALSTORAGE[(💾 Local Storage)]
-    
+
     %% Data Flow
     USER --> FRONTEND
     FRONTEND --> SDK
@@ -191,7 +191,7 @@ graph LR
     SDK --> CONTRACT
     CONTRACT --> BLOCKCHAIN
     SDK --> LOCALSTORAGE
-    
+
     %% Return Flow
     SUPABASE --> BACKEND
     BLOCKCHAIN --> CONTRACT
@@ -200,12 +200,12 @@ graph LR
     CONTRACT --> SDK
     SDK --> FRONTEND
     FRONTEND --> USER
-    
+
     %% Black and White Styling
     classDef dataSource fill:#f8f9fa,stroke:#212529
     classDef processor fill:#e9ecef,stroke:#495057
     classDef storage fill:#dee2e6,stroke:#6c757d
-    
+
     class USER,SESSION,IDENTITY dataSource
     class FRONTEND,SDK,BACKEND,CONTRACT processor
     class SUPABASE,BLOCKCHAIN,LOCALSTORAGE storage
@@ -222,30 +222,30 @@ graph TB
         TAILWIND[Tailwind CSS]
         REACT[React Components]
     end
-    
+
     subgraph "📦 SDK Layer"
         TS[TypeScript]
         ROLLUP[Rollup Bundler]
         POLKADOT[Polkadot.js API]
     end
-    
+
     subgraph "🚀 Application Layer"
         EXPRESS[Express.js]
         NODE[Node.js Runtime]
         JWT[JWT Tokens]
     end
-    
+
     subgraph "🗄️ Data Layer"
         SUPABASE[Supabase PostgreSQL]
         REDIS[Session Cache]
     end
-    
+
     subgraph "⛓️ Blockchain Layer"
         INK[ink! Smart Contract]
         POPNET[Pop Network]
         SUBSTRATE[Substrate Framework]
     end
-    
+
     %% Connections
     NEXTJS --> TS
     REACT --> ROLLUP
@@ -255,14 +255,14 @@ graph TB
     SUPABASE --> REDIS
     INK --> POPNET
     POPNET --> SUBSTRATE
-    
+
     %% Black and White Styling
     classDef presentation fill:#f8f9fa,stroke:#212529
     classDef sdk fill:#e9ecef,stroke:#495057
     classDef application fill:#dee2e6,stroke:#6c757d
     classDef data fill:#ffffff,stroke:#343a40
     classDef blockchain fill:#f1f3f4,stroke:#5f6368
-    
+
     class NEXTJS,TAILWIND,REACT presentation
     class TS,ROLLUP,POLKADOT sdk
     class EXPRESS,NODE,JWT application
@@ -274,28 +274,28 @@ graph TB
 
 ## 🏁 Quick Start Integration Flow
 
-```mermaid
+````mermaid
 graph TD
     START([🚀 Start Integration]) --> INSTALL[📦 npm install authentify-sdk]
     INSTALL --> CONFIG[⚙️ Configure SDK]
     CONFIG --> INIT[🔧 Initialize SDK]
     INIT --> CHOICE{Integration Type?}
-    
+
     CHOICE -->|Simple Auth| BASIC[🔐 Basic Login/Register]
     CHOICE -->|React App| COMPONENTS[⚛️ Use React Components]
     CHOICE -->|Blockchain| CONTRACT[⛓️ Contract Integration]
-    
+
     BASIC --> DEPLOY[🚀 Deploy & Go Live]
     COMPONENTS --> DEPLOY
     CONTRACT --> DEPLOY
-    
+
     DEPLOY --> SUCCESS([✅ Production Ready])
-    
+
     %% Black and White Styling
     classDef startEnd fill:#f8f9fa,stroke:#212529,stroke-width:3px
     classDef process fill:#e9ecef,stroke:#495057,stroke-width:2px
     classDef choice fill:#ffffff,stroke:#6c757d,stroke-width:2px
-    
+
     class START,SUCCESS startEnd
     class INSTALL,CONFIG,INIT,BASIC,COMPONENTS,CONTRACT,DEPLOY process
     class CHOICE choice
@@ -320,19 +320,19 @@ graph TD
         AUTH[🔐 JWT Authentication]
         CRYPTO[🔒 Encryption]
     end
-    
+
     subgraph "🔐 Authentication Flow"
         PWD[🔑 Password Hashing]
         WALLET[👛 Wallet Signature]
         SESSION[📋 Session Management]
     end
-    
+
     subgraph "⛓️ Blockchain Security"
         CONTRACT[📝 Smart Contract]
         CONSENSUS[✅ Network Consensus]
         IMMUTABLE[🔒 Immutable Storage]
     end
-    
+
     INPUT --> RATE
     RATE --> AUTH
     AUTH --> CRYPTO
@@ -340,13 +340,14 @@ graph TD
     WALLET --> SESSION
     CONTRACT --> CONSENSUS
     CONSENSUS --> IMMUTABLE
-    
+
     %% Black and White Styling
     classDef security fill:#f8f9fa,stroke:#212529
     classDef auth fill:#e9ecef,stroke:#495057
     classDef blockchain fill:#dee2e6,stroke:#6c757d
-    
+
     class INPUT,RATE,AUTH,CRYPTO security
     class PWD,WALLET,SESSION auth
     class CONTRACT,CONSENSUS,IMMUTABLE blockchain
 ```This architecture represents a **production-ready, scalable Web3 authentication platform** that bridges traditional Web2 UX with Web3 security through thoughtful design and comprehensive implementation.
+````
