@@ -40,37 +40,37 @@ authentify/
 
 ## 🏗️ High-Level Architecture Flow
 
-```mermaid
+````mermaid
 graph TD
     %% User Layer
     U[👤 Developer/End User] --> F[🌐 Frontend App]
     U --> D[📱 dApp Integration]
-    
+
     %% Frontend Layer
     F --> SDK[📦 Authentify SDK]
     D --> SDK
-    
+
     %% SDK Components
     SDK --> AC[🔗 API Client]
     SDK --> CC[⛓️ Contract Client]
     SDK --> RC[⚛️ React Components]
-    
+
     %% Backend Services
     AC --> API[🚀 Backend API]
     API --> DB[(🗄️ Supabase DB)]
     API --> JWT[🔐 JWT Service]
     API --> OAUTH[🔑 OAuth Providers]
-    
+
     %% Blockchain Layer
     CC --> W[👛 Wallet Extension]
     CC --> BC[⛓️ Smart Contract]
     W --> BC
-    
+
     %% External Services
     OAUTH --> G[📧 Google]
     OAUTH --> GH[🐙 GitHub]
     BC --> PN[🔗 Pop Network]
-    
+
     %% Dark Theme Styling
     classDef userLayer fill:#2d3748,stroke:#e2e8f0,stroke-width:2px,color:#ffffff
     classDef frontendLayer fill:#1a202c,stroke:#cbd5e0,stroke-width:2px,color:#ffffff
@@ -78,7 +78,7 @@ graph TD
     classDef backendLayer fill:#1a202c,stroke:#e2e8f0,stroke-width:2px,color:#ffffff
     classDef blockchainLayer fill:#2d3748,stroke:#cbd5e0,stroke-width:2px,color:#ffffff
     classDef externalLayer fill:#4a5568,stroke:#a0aec0,stroke-width:2px,color:#ffffff
-    
+
     class U,F,D userLayer
     class SDK frontendLayer
     class AC,CC,RC sdkLayer
@@ -159,30 +159,30 @@ sequenceDiagram
     W-->>S: Transaction signed
     S->>C: Submit transaction
     C-->>S: Transaction complete
-```
+````
 
 ---
 
 ## 🗂️ Data Flow Architecture
 
-```mermaid
+````mermaid
 graph LR
     %% Data Sources
     USER[(👤 User Data)]
     SESSION[(🔐 Session Data)]
     IDENTITY[(🆔 Identity Data)]
-    
+
     %% Processing Layers
     FRONTEND[🌐 Frontend Layer]
     SDK[📦 SDK Layer]
     BACKEND[🚀 Backend Layer]
     CONTRACT[⛓️ Contract Layer]
-    
+
     %% Data Stores
     SUPABASE[(🗄️ Supabase)]
     BLOCKCHAIN[(⛓️ Blockchain)]
     LOCALSTORAGE[(💾 Local Storage)]
-    
+
     %% Data Flow
     USER --> FRONTEND
     FRONTEND --> SDK
@@ -191,7 +191,7 @@ graph LR
     SDK --> CONTRACT
     CONTRACT --> BLOCKCHAIN
     SDK --> LOCALSTORAGE
-    
+
     %% Return Flow
     SUPABASE --> BACKEND
     BLOCKCHAIN --> CONTRACT
@@ -200,12 +200,12 @@ graph LR
     CONTRACT --> SDK
     SDK --> FRONTEND
     FRONTEND --> USER
-    
+
     %% Dark Theme Styling
     classDef dataSource fill:#2d3748,stroke:#e2e8f0,stroke-width:2px,color:#ffffff
     classDef processor fill:#1a202c,stroke:#cbd5e0,stroke-width:2px,color:#ffffff
     classDef storage fill:#4a5568,stroke:#a0aec0,stroke-width:2px,color:#ffffff
-    
+
     class USER,SESSION,IDENTITY dataSource
     class FRONTEND,SDK,BACKEND,CONTRACT processor
     class SUPABASE,BLOCKCHAIN,LOCALSTORAGE storage
@@ -220,30 +220,30 @@ graph TB
         TAILWIND[Tailwind CSS]
         REACT[React Components]
     end
-    
+
     subgraph "📦 SDK Layer"
         TS[TypeScript]
         ROLLUP[Rollup Bundler]
         POLKADOT[Polkadot.js API]
     end
-    
+
     subgraph "🚀 Application Layer"
         EXPRESS[Express.js]
         NODE[Node.js Runtime]
         JWT[JWT Tokens]
     end
-    
+
     subgraph "🗄️ Data Layer"
         SUPABASE[Supabase PostgreSQL]
         REDIS[Session Cache]
     end
-    
+
     subgraph "⛓️ Blockchain Layer"
         INK[ink! Smart Contract]
         POPNET[Pop Network]
         SUBSTRATE[Substrate Framework]
     end
-    
+
     %% Connections
     NEXTJS --> TS
     REACT --> ROLLUP
@@ -253,14 +253,14 @@ graph TB
     SUPABASE --> REDIS
     INK --> POPNET
     POPNET --> SUBSTRATE
-    
+
     %% Dark Theme Styling
     classDef presentation fill:#2d3748,stroke:#e2e8f0,stroke-width:2px,color:#ffffff
     classDef sdk fill:#1a202c,stroke:#cbd5e0,stroke-width:2px,color:#ffffff
     classDef application fill:#2d3748,stroke:#a0aec0,stroke-width:2px,color:#ffffff
     classDef data fill:#4a5568,stroke:#e2e8f0,stroke-width:2px,color:#ffffff
     classDef blockchain fill:#1a202c,stroke:#cbd5e0,stroke-width:2px,color:#ffffff
-    
+
     class NEXTJS,TAILWIND,REACT presentation
     class TS,ROLLUP,POLKADOT sdk
     class EXPRESS,NODE,JWT application
@@ -276,26 +276,26 @@ graph TD
     INSTALL --> CONFIG[⚙️ Configure SDK]
     CONFIG --> INIT[🔧 Initialize SDK]
     INIT --> CHOICE{Integration Type?}
-    
+
     CHOICE -->|Simple Auth| BASIC[🔐 Basic Login/Register]
     CHOICE -->|React App| COMPONENTS[⚛️ Use React Components]
     CHOICE -->|Blockchain| CONTRACT[⛓️ Contract Integration]
-    
+
     BASIC --> DEPLOY[🚀 Deploy & Go Live]
     COMPONENTS --> DEPLOY
     CONTRACT --> DEPLOY
-    
+
     DEPLOY --> SUCCESS([✅ Production Ready])
-    
+
     %% Dark Theme Styling
     classDef startEnd fill:#2d3748,stroke:#e2e8f0,stroke-width:3px,color:#ffffff
     classDef process fill:#1a202c,stroke:#cbd5e0,stroke-width:2px,color:#ffffff
     classDef choice fill:#4a5568,stroke:#a0aec0,stroke-width:2px,color:#ffffff
-    
+
     class START,SUCCESS startEnd
     class INSTALL,CONFIG,INIT,BASIC,COMPONENTS,CONTRACT,DEPLOY process
     class CHOICE choice
-```
+````
 
 ## 📊 Performance & Scalability Metrics
 
