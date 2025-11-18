@@ -45,49 +45,47 @@ graph TD
     %% User Layer
     U[👤 Developer/End User] --> F[🌐 Frontend App]
     U --> D[📱 dApp Integration]
-
+    
     %% Frontend Layer
     F --> SDK[📦 Authentify SDK]
     D --> SDK
-
+    
     %% SDK Components
     SDK --> AC[🔗 API Client]
     SDK --> CC[⛓️ Contract Client]
     SDK --> RC[⚛️ React Components]
-
+    
     %% Backend Services
     AC --> API[🚀 Backend API]
     API --> DB[(🗄️ Supabase DB)]
     API --> JWT[🔐 JWT Service]
     API --> OAUTH[🔑 OAuth Providers]
-
+    
     %% Blockchain Layer
     CC --> W[👛 Wallet Extension]
     CC --> BC[⛓️ Smart Contract]
     W --> BC
-
+    
     %% External Services
     OAUTH --> G[📧 Google]
     OAUTH --> GH[🐙 GitHub]
     BC --> PN[🔗 Pop Network]
-
-    %% Black and White Styling
-    classDef userLayer fill:#f8f9fa,stroke:#212529,stroke-width:2px
-    classDef frontendLayer fill:#e9ecef,stroke:#495057,stroke-width:2px
-    classDef sdkLayer fill:#dee2e6,stroke:#6c757d,stroke-width:2px
-    classDef backendLayer fill:#ffffff,stroke:#343a40,stroke-width:2px
-    classDef blockchainLayer fill:#f1f3f4,stroke:#5f6368,stroke-width:2px
-    classDef externalLayer fill:#fafafa,stroke:#9aa0a6,stroke-width:2px
-
+    
+    %% Dark Theme Styling
+    classDef userLayer fill:#2d3748,stroke:#e2e8f0,stroke-width:2px,color:#ffffff
+    classDef frontendLayer fill:#1a202c,stroke:#cbd5e0,stroke-width:2px,color:#ffffff
+    classDef sdkLayer fill:#2d3748,stroke:#a0aec0,stroke-width:2px,color:#ffffff
+    classDef backendLayer fill:#1a202c,stroke:#e2e8f0,stroke-width:2px,color:#ffffff
+    classDef blockchainLayer fill:#2d3748,stroke:#cbd5e0,stroke-width:2px,color:#ffffff
+    classDef externalLayer fill:#4a5568,stroke:#a0aec0,stroke-width:2px,color:#ffffff
+    
     class U,F,D userLayer
     class SDK frontendLayer
     class AC,CC,RC sdkLayer
     class API,DB,JWT,OAUTH backendLayer
     class W,BC,PN blockchainLayer
     class G,GH externalLayer
-```
-
-## 📋 Component Breakdown
+```## 📋 Component Breakdown
 
 ### 🎯 **Layer 1: User Interaction**
 
@@ -173,18 +171,18 @@ graph LR
     USER[(👤 User Data)]
     SESSION[(🔐 Session Data)]
     IDENTITY[(🆔 Identity Data)]
-
+    
     %% Processing Layers
     FRONTEND[🌐 Frontend Layer]
     SDK[📦 SDK Layer]
     BACKEND[🚀 Backend Layer]
     CONTRACT[⛓️ Contract Layer]
-
+    
     %% Data Stores
     SUPABASE[(🗄️ Supabase)]
     BLOCKCHAIN[(⛓️ Blockchain)]
     LOCALSTORAGE[(💾 Local Storage)]
-
+    
     %% Data Flow
     USER --> FRONTEND
     FRONTEND --> SDK
@@ -193,7 +191,7 @@ graph LR
     SDK --> CONTRACT
     CONTRACT --> BLOCKCHAIN
     SDK --> LOCALSTORAGE
-
+    
     %% Return Flow
     SUPABASE --> BACKEND
     BLOCKCHAIN --> CONTRACT
@@ -202,18 +200,16 @@ graph LR
     CONTRACT --> SDK
     SDK --> FRONTEND
     FRONTEND --> USER
-
-    %% Black and White Styling
-    classDef dataSource fill:#f8f9fa,stroke:#212529
-    classDef processor fill:#e9ecef,stroke:#495057
-    classDef storage fill:#dee2e6,stroke:#6c757d
-
+    
+    %% Dark Theme Styling
+    classDef dataSource fill:#2d3748,stroke:#e2e8f0,stroke-width:2px,color:#ffffff
+    classDef processor fill:#1a202c,stroke:#cbd5e0,stroke-width:2px,color:#ffffff
+    classDef storage fill:#4a5568,stroke:#a0aec0,stroke-width:2px,color:#ffffff
+    
     class USER,SESSION,IDENTITY dataSource
     class FRONTEND,SDK,BACKEND,CONTRACT processor
     class SUPABASE,BLOCKCHAIN,LOCALSTORAGE storage
-```
-
----
+```---
 
 ## 🔧 Technology Stack Visualization
 
@@ -224,30 +220,30 @@ graph TB
         TAILWIND[Tailwind CSS]
         REACT[React Components]
     end
-
+    
     subgraph "📦 SDK Layer"
         TS[TypeScript]
         ROLLUP[Rollup Bundler]
         POLKADOT[Polkadot.js API]
     end
-
+    
     subgraph "🚀 Application Layer"
         EXPRESS[Express.js]
         NODE[Node.js Runtime]
         JWT[JWT Tokens]
     end
-
+    
     subgraph "🗄️ Data Layer"
         SUPABASE[Supabase PostgreSQL]
         REDIS[Session Cache]
     end
-
+    
     subgraph "⛓️ Blockchain Layer"
         INK[ink! Smart Contract]
         POPNET[Pop Network]
         SUBSTRATE[Substrate Framework]
     end
-
+    
     %% Connections
     NEXTJS --> TS
     REACT --> ROLLUP
@@ -257,22 +253,20 @@ graph TB
     SUPABASE --> REDIS
     INK --> POPNET
     POPNET --> SUBSTRATE
-
-    %% Black and White Styling
-    classDef presentation fill:#f8f9fa,stroke:#212529
-    classDef sdk fill:#e9ecef,stroke:#495057
-    classDef application fill:#dee2e6,stroke:#6c757d
-    classDef data fill:#ffffff,stroke:#343a40
-    classDef blockchain fill:#f1f3f4,stroke:#5f6368
-
+    
+    %% Dark Theme Styling
+    classDef presentation fill:#2d3748,stroke:#e2e8f0,stroke-width:2px,color:#ffffff
+    classDef sdk fill:#1a202c,stroke:#cbd5e0,stroke-width:2px,color:#ffffff
+    classDef application fill:#2d3748,stroke:#a0aec0,stroke-width:2px,color:#ffffff
+    classDef data fill:#4a5568,stroke:#e2e8f0,stroke-width:2px,color:#ffffff
+    classDef blockchain fill:#1a202c,stroke:#cbd5e0,stroke-width:2px,color:#ffffff
+    
     class NEXTJS,TAILWIND,REACT presentation
     class TS,ROLLUP,POLKADOT sdk
     class EXPRESS,NODE,JWT application
     class SUPABASE,REDIS data
     class INK,POPNET,SUBSTRATE blockchain
-```
-
----
+```---
 
 ## 🏁 Quick Start Integration Flow
 
@@ -282,22 +276,22 @@ graph TD
     INSTALL --> CONFIG[⚙️ Configure SDK]
     CONFIG --> INIT[🔧 Initialize SDK]
     INIT --> CHOICE{Integration Type?}
-
+    
     CHOICE -->|Simple Auth| BASIC[🔐 Basic Login/Register]
     CHOICE -->|React App| COMPONENTS[⚛️ Use React Components]
     CHOICE -->|Blockchain| CONTRACT[⛓️ Contract Integration]
-
+    
     BASIC --> DEPLOY[🚀 Deploy & Go Live]
     COMPONENTS --> DEPLOY
     CONTRACT --> DEPLOY
-
+    
     DEPLOY --> SUCCESS([✅ Production Ready])
-
-    %% Black and White Styling
-    classDef startEnd fill:#f8f9fa,stroke:#212529,stroke-width:3px
-    classDef process fill:#e9ecef,stroke:#495057,stroke-width:2px
-    classDef choice fill:#ffffff,stroke:#6c757d,stroke-width:2px
-
+    
+    %% Dark Theme Styling
+    classDef startEnd fill:#2d3748,stroke:#e2e8f0,stroke-width:3px,color:#ffffff
+    classDef process fill:#1a202c,stroke:#cbd5e0,stroke-width:2px,color:#ffffff
+    classDef choice fill:#4a5568,stroke:#a0aec0,stroke-width:2px,color:#ffffff
+    
     class START,SUCCESS startEnd
     class INSTALL,CONFIG,INIT,BASIC,COMPONENTS,CONTRACT,DEPLOY process
     class CHOICE choice
