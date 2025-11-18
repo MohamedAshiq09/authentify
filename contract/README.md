@@ -232,7 +232,7 @@ graph TD
 
 ### Session Management Flow
 
-````mermaid
+```mermaid
 graph TD
     A[Successful login] --> B[Backend generates JWT]
     B --> C["Call create_session()"]
@@ -267,7 +267,7 @@ cargo install --force --locked cargo-contract
 
 # Install substrate-contracts-node for local testing
 cargo install contracts-node --git https://github.com/paritytech/substrate-contracts-node.git
-````
+```
 
 ### Build Contract
 

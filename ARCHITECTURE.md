@@ -77,7 +77,9 @@ graph TD
     classDef sdkLayer fill:#dee2e6,stroke:#6c757d,stroke-width:2px
     classDef backendLayer fill:#ffffff,stroke:#343a40,stroke-width:2px
     classDef blockchainLayer fill:#f1f3f4,stroke:#5f6368,stroke-width:2px
-    classDef externalLayer fill:#fafafa,stroke:#9aa0a6,stroke-width:2px    class U,F,D userLayer
+    classDef externalLayer fill:#fafafa,stroke:#9aa0a6,stroke-width:2px
+
+    class U,F,D userLayer
     class SDK frontendLayer
     class AC,CC,RC sdkLayer
     class API,DB,JWT,OAUTH backendLayer
@@ -274,7 +276,7 @@ graph TB
 
 ## 🏁 Quick Start Integration Flow
 
-````mermaid
+```mermaid
 graph TD
     START([🚀 Start Integration]) --> INSTALL[📦 npm install authentify-sdk]
     INSTALL --> CONFIG[⚙️ Configure SDK]
@@ -299,7 +301,9 @@ graph TD
     class START,SUCCESS startEnd
     class INSTALL,CONFIG,INIT,BASIC,COMPONENTS,CONTRACT,DEPLOY process
     class CHOICE choice
-```## 📊 Performance & Scalability Metrics
+```
+
+## 📊 Performance & Scalability Metrics
 
 | Component          | Current Scale | Bottleneck      | Solution           |
 | ------------------ | ------------- | --------------- | ------------------ |
@@ -349,5 +353,10 @@ graph TD
     class INPUT,RATE,AUTH,CRYPTO security
     class PWD,WALLET,SESSION auth
     class CONTRACT,CONSENSUS,IMMUTABLE blockchain
-```This architecture represents a **production-ready, scalable Web3 authentication platform** that bridges traditional Web2 UX with Web3 security through thoughtful design and comprehensive implementation.
-````
+```
+
+This architecture represents a **production-ready, scalable Web3 authentication platform** that bridges traditional Web2 UX with Web3 security through thoughtful design and comprehensive implementation.
+
+```
+
+```
