@@ -45,41 +45,39 @@ graph TD
     %% User Layer
     U[👤 Developer/End User] --> F[🌐 Frontend App]
     U --> D[📱 dApp Integration]
-
+    
     %% Frontend Layer
     F --> SDK[📦 Authentify SDK]
     D --> SDK
-
+    
     %% SDK Components
     SDK --> AC[🔗 API Client]
     SDK --> CC[⛓️ Contract Client]
     SDK --> RC[⚛️ React Components]
-
+    
     %% Backend Services
     AC --> API[🚀 Backend API]
     API --> DB[(🗄️ Supabase DB)]
     API --> JWT[🔐 JWT Service]
     API --> OAUTH[🔑 OAuth Providers]
-
+    
     %% Blockchain Layer
     CC --> W[👛 Wallet Extension]
     CC --> BC[⛓️ Smart Contract]
     W --> BC
-
+    
     %% External Services
     OAUTH --> G[📧 Google]
     OAUTH --> GH[🐙 GitHub]
     BC --> PN[🔗 Pop Network]
-
-    %% Styling
-    classDef userLayer fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
-    classDef frontendLayer fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    classDef sdkLayer fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
-    classDef backendLayer fill:#fff3e0,stroke:#f57c00,stroke-width:2px
-    classDef blockchainLayer fill:#fce4ec,stroke:#c2185b,stroke-width:2px
-    classDef externalLayer fill:#f5f5f5,stroke:#616161,stroke-width:2px
-
-    class U,F,D userLayer
+    
+    %% Black and White Styling
+    classDef userLayer fill:#f8f9fa,stroke:#212529,stroke-width:2px
+    classDef frontendLayer fill:#e9ecef,stroke:#495057,stroke-width:2px
+    classDef sdkLayer fill:#dee2e6,stroke:#6c757d,stroke-width:2px
+    classDef backendLayer fill:#ffffff,stroke:#343a40,stroke-width:2px
+    classDef blockchainLayer fill:#f1f3f4,stroke:#5f6368,stroke-width:2px
+    classDef externalLayer fill:#fafafa,stroke:#9aa0a6,stroke-width:2px    class U,F,D userLayer
     class SDK frontendLayer
     class AC,CC,RC sdkLayer
     class API,DB,JWT,OAUTH backendLayer
@@ -173,18 +171,18 @@ graph LR
     USER[(👤 User Data)]
     SESSION[(🔐 Session Data)]
     IDENTITY[(🆔 Identity Data)]
-
+    
     %% Processing Layers
     FRONTEND[🌐 Frontend Layer]
     SDK[📦 SDK Layer]
     BACKEND[🚀 Backend Layer]
     CONTRACT[⛓️ Contract Layer]
-
+    
     %% Data Stores
     SUPABASE[(🗄️ Supabase)]
     BLOCKCHAIN[(⛓️ Blockchain)]
     LOCALSTORAGE[(💾 Local Storage)]
-
+    
     %% Data Flow
     USER --> FRONTEND
     FRONTEND --> SDK
@@ -193,7 +191,7 @@ graph LR
     SDK --> CONTRACT
     CONTRACT --> BLOCKCHAIN
     SDK --> LOCALSTORAGE
-
+    
     %% Return Flow
     SUPABASE --> BACKEND
     BLOCKCHAIN --> CONTRACT
@@ -202,12 +200,12 @@ graph LR
     CONTRACT --> SDK
     SDK --> FRONTEND
     FRONTEND --> USER
-
-    %% Styling
-    classDef dataSource fill:#e3f2fd,stroke:#1976d2
-    classDef processor fill:#f3e5f5,stroke:#7b1fa2
-    classDef storage fill:#e8f5e8,stroke:#388e3c
-
+    
+    %% Black and White Styling
+    classDef dataSource fill:#f8f9fa,stroke:#212529
+    classDef processor fill:#e9ecef,stroke:#495057
+    classDef storage fill:#dee2e6,stroke:#6c757d
+    
     class USER,SESSION,IDENTITY dataSource
     class FRONTEND,SDK,BACKEND,CONTRACT processor
     class SUPABASE,BLOCKCHAIN,LOCALSTORAGE storage
@@ -224,30 +222,30 @@ graph TB
         TAILWIND[Tailwind CSS]
         REACT[React Components]
     end
-
+    
     subgraph "📦 SDK Layer"
         TS[TypeScript]
         ROLLUP[Rollup Bundler]
         POLKADOT[Polkadot.js API]
     end
-
+    
     subgraph "🚀 Application Layer"
         EXPRESS[Express.js]
         NODE[Node.js Runtime]
         JWT[JWT Tokens]
     end
-
+    
     subgraph "🗄️ Data Layer"
         SUPABASE[Supabase PostgreSQL]
         REDIS[Session Cache]
     end
-
+    
     subgraph "⛓️ Blockchain Layer"
         INK[ink! Smart Contract]
         POPNET[Pop Network]
         SUBSTRATE[Substrate Framework]
     end
-
+    
     %% Connections
     NEXTJS --> TS
     REACT --> ROLLUP
@@ -257,14 +255,14 @@ graph TB
     SUPABASE --> REDIS
     INK --> POPNET
     POPNET --> SUBSTRATE
-
-    %% Styling
-    classDef presentation fill:#e1f5fe,stroke:#0277bd
-    classDef sdk fill:#f3e5f5,stroke:#7b1fa2
-    classDef application fill:#e8f5e8,stroke:#388e3c
-    classDef data fill:#fff3e0,stroke:#f57c00
-    classDef blockchain fill:#fce4ec,stroke:#c2185b
-
+    
+    %% Black and White Styling
+    classDef presentation fill:#f8f9fa,stroke:#212529
+    classDef sdk fill:#e9ecef,stroke:#495057
+    classDef application fill:#dee2e6,stroke:#6c757d
+    classDef data fill:#ffffff,stroke:#343a40
+    classDef blockchain fill:#f1f3f4,stroke:#5f6368
+    
     class NEXTJS,TAILWIND,REACT presentation
     class TS,ROLLUP,POLKADOT sdk
     class EXPRESS,NODE,JWT application
@@ -282,29 +280,26 @@ graph TD
     INSTALL --> CONFIG[⚙️ Configure SDK]
     CONFIG --> INIT[🔧 Initialize SDK]
     INIT --> CHOICE{Integration Type?}
-
+    
     CHOICE -->|Simple Auth| BASIC[🔐 Basic Login/Register]
     CHOICE -->|React App| COMPONENTS[⚛️ Use React Components]
     CHOICE -->|Blockchain| CONTRACT[⛓️ Contract Integration]
-
+    
     BASIC --> DEPLOY[🚀 Deploy & Go Live]
     COMPONENTS --> DEPLOY
     CONTRACT --> DEPLOY
-
+    
     DEPLOY --> SUCCESS([✅ Production Ready])
-
-    %% Styling
-    classDef start fill:#c8e6c9,stroke:#4caf50,stroke-width:3px
-    classDef process fill:#e1f5fe,stroke:#2196f3,stroke-width:2px
-    classDef choice fill:#fff3e0,stroke:#ff9800,stroke-width:2px
-    classDef end fill:#f3e5f5,stroke:#9c27b0,stroke-width:3px
-
-    class START,SUCCESS start
+    
+    %% Black and White Styling
+    classDef startEnd fill:#f8f9fa,stroke:#212529,stroke-width:3px
+    classDef process fill:#e9ecef,stroke:#495057,stroke-width:2px
+    classDef choice fill:#ffffff,stroke:#6c757d,stroke-width:2px
+    
+    class START,SUCCESS startEnd
     class INSTALL,CONFIG,INIT,BASIC,COMPONENTS,CONTRACT,DEPLOY process
     class CHOICE choice
-```
-
-## 📊 Performance & Scalability Metrics
+```## 📊 Performance & Scalability Metrics
 
 | Component          | Current Scale | Bottleneck      | Solution           |
 | ------------------ | ------------- | --------------- | ------------------ |
@@ -325,19 +320,19 @@ graph TD
         AUTH[🔐 JWT Authentication]
         CRYPTO[🔒 Encryption]
     end
-
+    
     subgraph "🔐 Authentication Flow"
         PWD[🔑 Password Hashing]
         WALLET[👛 Wallet Signature]
         SESSION[📋 Session Management]
     end
-
+    
     subgraph "⛓️ Blockchain Security"
         CONTRACT[📝 Smart Contract]
         CONSENSUS[✅ Network Consensus]
         IMMUTABLE[🔒 Immutable Storage]
     end
-
+    
     INPUT --> RATE
     RATE --> AUTH
     AUTH --> CRYPTO
@@ -345,6 +340,13 @@ graph TD
     WALLET --> SESSION
     CONTRACT --> CONSENSUS
     CONSENSUS --> IMMUTABLE
-```
-
-This architecture represents a **production-ready, scalable Web3 authentication platform** that bridges traditional Web2 UX with Web3 security through thoughtful design and comprehensive implementation.
+    
+    %% Black and White Styling
+    classDef security fill:#f8f9fa,stroke:#212529
+    classDef auth fill:#e9ecef,stroke:#495057
+    classDef blockchain fill:#dee2e6,stroke:#6c757d
+    
+    class INPUT,RATE,AUTH,CRYPTO security
+    class PWD,WALLET,SESSION auth
+    class CONTRACT,CONSENSUS,IMMUTABLE blockchain
+```This architecture represents a **production-ready, scalable Web3 authentication platform** that bridges traditional Web2 UX with Web3 security through thoughtful design and comprehensive implementation.
