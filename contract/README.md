@@ -249,7 +249,9 @@ graph TD
     M[User logout] --> N["Call revoke_session()"]
     N --> O[Mark session inactive]
     O --> P[Emit SessionRevoked event]
-```## 🛠️ Development Setup
+```
+
+## 🛠️ Development Setup
 
 ### Prerequisites
 
