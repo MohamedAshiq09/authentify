@@ -40,7 +40,7 @@ authentify/
 
 ## 🏗️ High-Level Architecture Flow
 
-````mermaid
+```mermaid
 graph TD
     %% User Layer
     U[👤 Developer/End User] --> F[🌐 Frontend App]
@@ -71,13 +71,13 @@ graph TD
     OAUTH --> GH[🐙 GitHub]
     BC --> PN[🔗 Pop Network]
 
-    %% Dark Theme Styling
-    classDef userLayer fill:#2d3748,stroke:#e2e8f0,stroke-width:2px,color:#ffffff
-    classDef frontendLayer fill:#1a202c,stroke:#cbd5e0,stroke-width:2px,color:#ffffff
-    classDef sdkLayer fill:#2d3748,stroke:#a0aec0,stroke-width:2px,color:#ffffff
-    classDef backendLayer fill:#1a202c,stroke:#e2e8f0,stroke-width:2px,color:#ffffff
-    classDef blockchainLayer fill:#2d3748,stroke:#cbd5e0,stroke-width:2px,color:#ffffff
-    classDef externalLayer fill:#4a5568,stroke:#a0aec0,stroke-width:2px,color:#ffffff
+    %% Black and White Styling
+    classDef userLayer fill:#f8f9fa,stroke:#212529,stroke-width:2px
+    classDef frontendLayer fill:#e9ecef,stroke:#495057,stroke-width:2px
+    classDef sdkLayer fill:#dee2e6,stroke:#6c757d,stroke-width:2px
+    classDef backendLayer fill:#ffffff,stroke:#343a40,stroke-width:2px
+    classDef blockchainLayer fill:#f1f3f4,stroke:#5f6368,stroke-width:2px
+    classDef externalLayer fill:#fafafa,stroke:#9aa0a6,stroke-width:2px
 
     class U,F,D userLayer
     class SDK frontendLayer
@@ -161,13 +161,13 @@ sequenceDiagram
     W-->>S: Transaction signed
     S->>C: Submit transaction
     C-->>S: Transaction complete
-````
+```
 
 ---
 
 ## 🗂️ Data Flow Architecture
 
-````mermaid
+```mermaid
 graph LR
     %% Data Sources
     USER[(👤 User Data)]
@@ -203,10 +203,10 @@ graph LR
     SDK --> FRONTEND
     FRONTEND --> USER
 
-    %% Dark Theme Styling
-    classDef dataSource fill:#2d3748,stroke:#e2e8f0,stroke-width:2px,color:#ffffff
-    classDef processor fill:#1a202c,stroke:#cbd5e0,stroke-width:2px,color:#ffffff
-    classDef storage fill:#4a5568,stroke:#a0aec0,stroke-width:2px,color:#ffffff
+    %% Black and White Styling
+    classDef dataSource fill:#f8f9fa,stroke:#212529
+    classDef processor fill:#e9ecef,stroke:#495057
+    classDef storage fill:#dee2e6,stroke:#6c757d
 
     class USER,SESSION,IDENTITY dataSource
     class FRONTEND,SDK,BACKEND,CONTRACT processor
@@ -258,12 +258,12 @@ graph TB
     INK --> POPNET
     POPNET --> SUBSTRATE
 
-    %% Dark Theme Styling
-    classDef presentation fill:#2d3748,stroke:#e2e8f0,stroke-width:2px,color:#ffffff
-    classDef sdk fill:#1a202c,stroke:#cbd5e0,stroke-width:2px,color:#ffffff
-    classDef application fill:#2d3748,stroke:#a0aec0,stroke-width:2px,color:#ffffff
-    classDef data fill:#4a5568,stroke:#e2e8f0,stroke-width:2px,color:#ffffff
-    classDef blockchain fill:#1a202c,stroke:#cbd5e0,stroke-width:2px,color:#ffffff
+    %% Black and White Styling
+    classDef presentation fill:#f8f9fa,stroke:#212529
+    classDef sdk fill:#e9ecef,stroke:#495057
+    classDef application fill:#dee2e6,stroke:#6c757d
+    classDef data fill:#ffffff,stroke:#343a40
+    classDef blockchain fill:#f1f3f4,stroke:#5f6368
 
     class NEXTJS,TAILWIND,REACT presentation
     class TS,ROLLUP,POLKADOT sdk
@@ -293,15 +293,15 @@ graph TD
 
     DEPLOY --> SUCCESS([✅ Production Ready])
 
-    %% Dark Theme Styling
-    classDef startEnd fill:#2d3748,stroke:#e2e8f0,stroke-width:3px,color:#ffffff
-    classDef process fill:#1a202c,stroke:#cbd5e0,stroke-width:2px,color:#ffffff
-    classDef choice fill:#4a5568,stroke:#a0aec0,stroke-width:2px,color:#ffffff
+    %% Black and White Styling
+    classDef startEnd fill:#f8f9fa,stroke:#212529,stroke-width:3px
+    classDef process fill:#e9ecef,stroke:#495057,stroke-width:2px
+    classDef choice fill:#ffffff,stroke:#6c757d,stroke-width:2px
 
     class START,SUCCESS startEnd
     class INSTALL,CONFIG,INIT,BASIC,COMPONENTS,CONTRACT,DEPLOY process
     class CHOICE choice
-````
+```
 
 ## 📊 Performance & Scalability Metrics
 
