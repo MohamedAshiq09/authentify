@@ -10,22 +10,10 @@ Authentify is a decentralized identity authentication smart contract built on Po
 - **Social Integration**: Link traditional OAuth providers (Google, GitHub, Twitter)
 - **Security First**: Account lockout, failed attempt tracking, admin controls
 - **Biometric Ready**: Future-proof with WebAuthn and biometric authentication support
+  verification
+  └── README.md # This file
 
-## 📁 Contract Architecture
-
-Our **single-contract approach** handles all authentication logic:
-
-```
-contract/
-├── lib.rs                  # Main contract implementation (1,462 lines)
-├── Cargo.toml             # Dependencies and metadata
-├── scripts/               # Deployment and testing scripts
-│   ├── build.sh           # Build contract
-│   ├── deploy.sh          # Deploy to network
-│   ├── test.sh            # Run tests
-│   └── verify_all_functions.sh  # Function verification
-└── README.md              # This file
-```
+````
 
 ## 🌐 Deployed Contract (Pop Network Paseo Testnet)
 
@@ -33,8 +21,8 @@ contract/
 | ------------------- | -------------------------------------------------- | ------------------- |
 | **Authentify Core** | `5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY` | `0x1a2b3c4d5e6f...` |
 
-> **Network**: Pop Network (Paseo Testnet)  
-> **RPC**: `wss://rpc1.paseo.popnetwork.xyz`  
+> **Network**: Pop Network (Paseo Testnet)
+> **RPC**: `wss://rpc1.paseo.popnetwork.xyz`
 > **Last Updated**: November 2024
 
 ## 🏗️ Contract Details
@@ -58,7 +46,7 @@ pub struct IdentityInfo {
     pub failed_attempts: u32,       // Failed login counter
     pub is_locked: bool,            // Account lock status
 }
-```
+````
 
 #### **SessionInfo**
 
@@ -210,7 +198,7 @@ get_active_sessions() -> u64
 ```mermaid
 graph TD
     A[User enters username/password] --> B[Frontend hashes password]
-    B --> C[Call register_identity()]
+    B --> C["Call register_identity()"]
     C --> D{Username available?}
     D -->|No| E[Return UsernameExists error]
     D -->|Yes| F{Social ID unique?}
@@ -225,7 +213,7 @@ graph TD
 ```mermaid
 graph TD
     A[User enters credentials] --> B[Frontend hashes password]
-    B --> C[Call authenticate()]
+    B --> C["Call authenticate()"]
     C --> D{Account exists?}
     D -->|No| E[Return UserNotFound error]
     D -->|Yes| F{Account locked?}
@@ -244,26 +232,24 @@ graph TD
 
 ### Session Management Flow
 
-```mermaid
+````mermaid
 graph TD
     A[Successful login] --> B[Backend generates JWT]
-    B --> C[Call create_session()]
+    B --> C["Call create_session()"]
     C --> D[Store session on-chain]
     D --> E[Return session_id]
     E --> F[Frontend stores JWT]
 
     G[API request with JWT] --> H[Backend validates JWT]
-    H --> I[Call verify_session()]
+    H --> I["Call verify_session()"]
     I --> J{Session valid?}
     J -->|Yes| K[Process request]
     J -->|No| L[Return 401 Unauthorized]
 
-    M[User logout] --> N[Call revoke_session()]
+    M[User logout] --> N["Call revoke_session()"]
     N --> O[Mark session inactive]
     O --> P[Emit SessionRevoked event]
-```
-
-## 🛠️ Development Setup
+```## 🛠️ Development Setup
 
 ### Prerequisites
 
@@ -279,7 +265,7 @@ cargo install --force --locked cargo-contract
 
 # Install substrate-contracts-node for local testing
 cargo install contracts-node --git https://github.com/paritytech/substrate-contracts-node.git
-```
+````
 
 ### Build Contract
 
@@ -322,10 +308,9 @@ substrate-contracts-node --dev
 
 ```bash
 # 1. Start local node
-substrate-contracts-node --dev
+ink-node --dev
 
 # 2. Deploy contract
-./scripts/deploy.sh
 
 # Or deploy manually
 cargo contract instantiate \
